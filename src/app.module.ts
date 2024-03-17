@@ -5,7 +5,6 @@ import { AuthModule } from './auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
-import { PrinterModule } from './printer/printer.module';
 import * as cors from 'cors';
 @Module({
   imports: [
@@ -20,7 +19,6 @@ import * as cors from 'cors';
     }),
     AuthModule,
     UserModule,
-    PrinterModule,
   ],
   controllers: [AppController],
   providers: [AppService],

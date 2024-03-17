@@ -1,17 +1,16 @@
-import {
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from 'class-validator';
-import { RoleName } from '../../auth/schemas/role.schema';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { FacturationDto } from './facturation.dto';
 
 export class UpdateUserDto {
   @IsString()
   @IsOptional()
   @IsNotEmpty()
-  name?: string;
+  firstName?: string;
+
+  @IsString()
+  @IsOptional()
+  @IsNotEmpty()
+  lastName?: string;
 
   @IsEmail()
   @IsOptional()
@@ -25,10 +24,5 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   @IsNotEmpty()
-  Url?: string;
-
-  @IsOptional()
-  @IsEnum(RoleName)
-  @IsNotEmpty()
-  role: RoleName;
+  facturation?: FacturationDto;
 }

@@ -1,15 +1,12 @@
-import {
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  IsString,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class SignUpDto {
   @IsNotEmpty()
   @IsString()
-  readonly name: string;
+  readonly firstName: string;
+  @IsNotEmpty()
+  @IsString()
+  readonly lastName: string;
 
   @IsNotEmpty()
   @IsEmail({}, { message: 'Please enter correct email' })

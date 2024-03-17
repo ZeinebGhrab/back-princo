@@ -1,17 +1,16 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { RoleName } from '../../auth/schemas/role.schema';
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+
 export class CreateUserDto {
   @IsNotEmpty()
   @IsString()
-  name: string;
+  firstName: string;
+  @IsNotEmpty()
+  @IsString()
+  lastName: string;
   @IsString()
   @IsEmail()
   email: string;
   @IsString()
   @IsNotEmpty()
   password: string;
-
-  @IsEnum(RoleName)
-  @IsNotEmpty()
-  role: RoleName;
 }

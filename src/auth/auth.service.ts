@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -9,64 +8,56 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
 import * as nodemailer from 'nodemailer';
-import * as crypto from 'crypto'; // Add this line
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
-import { ForgotPasswordDto } from './dto/ForgotPasswordDto';
-import { ChangePasswordDto } from './dto/ChangePasswordDto';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
   private logger = new Logger('AuthService ');
   private readonly transporter;
+
   constructor(
     @InjectModel(User.name)
     private userModel: Model<User>,
     private jwtService: JwtService,
   ) {
     this.transporter = nodemailer.createTransport({
-      host: 'sandbox.smtp.mailtrap.io',
-      port: 25,
-      secure: false,
+      service: 'Gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
-        user: '22175607bf9746',
-        pass: 'eaf961848683fa',
+        user: 'mahdisahnoun31@gmail.com',
+        pass: 'wyuo mfax zrbi bloq',
       },
     });
   }
 
   async signUp(signUpDto: SignUpDto): Promise<{ token: string }> {
     this.logger.log('Received SignUp request', JSON.stringify(signUpDto));
-    const { name, email, password } = signUpDto;
-    const checkName = await this.userModel.findOne({ name });
-    const checkEmail = await this.userModel.findOne({ email });
-    this.logger.log('details', name, email);
-    if (checkName && checkEmail) {
-      throw new ConflictException('user already exists');
+    const { firstName, lastName, email, password } = signUpDto;
+
+    const checkUser = await this.userModel.findOne({ email });
+    if (checkUser) {
+      throw new ConflictException('Email already exists');
     }
-    if (checkEmail) {
-      throw new ConflictException('email already exists');
-    }
-    if (checkName) {
-      throw new ConflictException('name already exists');
-    }
-    if (checkEmail) {
-      throw new ConflictException('email already exists');
-    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    this.logger.log('details', hashedPassword);
+    this.logger.log('Hashed password', hashedPassword);
 
     const newUser = await this.userModel.create({
-      name,
+      firstName,
+      lastName,
       email,
       password: hashedPassword,
-      role: 'Client',
+      emailVerified: false,
     });
-
+    await this.sendValidationEmail(email);
     const token = this.jwtService.sign({ id: newUser._id });
-    this.logger.log(token);
+    this.logger.log('Validation email sent');
     return { token };
   }
 
@@ -86,56 +77,27 @@ export class AuthService {
     this.logger.log(token);
     return { token };
   }
-  async sendValidationEmail(email: string): Promise<void> {
-    const validationToken = crypto.randomBytes(20).toString('hex');
-    const user = await this.userModel.findOne({ email });
-    this.logger.log(email);
-    if (!user) {
-      throw new BadRequestException('Invalid email');
-    }
-    await this.userModel.findOneAndUpdate({ email }, { validationToken });
-    const mailOptions = {
-      from: 'test_email@gmail.com',
-      to: user.email,
-      subject: 'Email Validation',
-      text: `Please click on the following link to validate your email: http://localhost:3000/auth/validate?token=${validationToken}`,
-    };
-    await this.transporter.sendMail(mailOptions);
-  }
-  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
-    const user = await this.userModel.findOne({
-      email: forgotPasswordDto.email,
-    });
-    if (!user) {
-      throw new BadRequestException('Invalid email');
-    }
-    const token = this.jwtService.sign({ email: user.email });
-    const forgotLink = `http://localhost:3000/auth/change-password?token=${token}`;
-    await this.transporter.sendMail({
-      from: 'test_email@gmail.com',
-      to: user.email,
-      subject: 'Reset Password',
-      html: `
-        <h3>Hello ${user.name}!</h3>
-        <p>Please use this <a href="${forgotLink}">link</a> to reset your password.</p>
-      `,
-    });
-  }
 
-  async changePassword(
-    changePasswordDto: ChangePasswordDto,
-  ): Promise<{ token: string }> {
-    const { email, password } = changePasswordDto;
-    const user = await this.userModel.findOne({ email });
-    if (!user) {
-      throw new BadRequestException('User not found');
+  async sendValidationEmail(email: string): Promise<boolean> {
+    const token = crypto.randomBytes(20).toString('hex');
+    const verificationLink = `http://localhost:3000/auth/validate?token=${token}`;
+    const mailOptions = {
+      from: 'piximind@gmail.com',
+      to: email,
+      subject: 'Email Verification',
+      html: `
+        <p>Dear User,</p>
+        <p>Please click the following link to verify your email:</p>
+        <a href="${verificationLink}">Verify Email</a>
+      `,
+    };
+    try {
+      const info = await this.transporter.sendMail(mailOptions);
+      this.logger.log('Validation email sent:', info.messageId);
+      return true;
+    } catch (error) {
+      this.logger.error('Error sending validation email:', error);
+      return false;
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await this.userModel.findByIdAndUpdate(user._id, {
-      password: hashedPassword,
-    });
-    const token = this.jwtService.sign({ id: user._id });
-    this.logger.log(token);
-    return { token };
   }
 }
