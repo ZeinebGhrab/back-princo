@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Logger, Get } from "@nestjs/common";
+import { Body, Controller, Post, Logger, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { SignUpDto } from './dto/signup.dto';
@@ -24,7 +24,7 @@ export class AuthController {
   async validateEmail(
     @Body('email') email: string,
   ): Promise<{ message: string }> {
-    await this.authService.sendValidationEmail(email);
+    await this.authService.sendValidationEmail(email, false);
     this.logger.log('Validate email request', email);
     return { message: 'Validation email sent successfully' };
   }

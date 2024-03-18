@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { Facturation, FacturationSchema } from './facturation.schema';
+import mongoose, { Document } from 'mongoose';
+import { Facture } from './facture.schema';
 
 // Update the import
 
@@ -14,8 +14,8 @@ export class User extends Document {
   email: string;
   @Prop()
   password: string;
-  @Prop({ type: FacturationSchema })
-  facturation: Facturation;
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Facture' }] })
+  factures: Facture[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

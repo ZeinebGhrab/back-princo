@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -39,23 +40,30 @@ export class AuthService {
   async signUp(signUpDto: SignUpDto): Promise<{ token: string }> {
     this.logger.log('Received SignUp request', JSON.stringify(signUpDto));
     const { firstName, lastName, email, password } = signUpDto;
-
     const checkUser = await this.userModel.findOne({ email });
     if (checkUser) {
       throw new ConflictException('Email already exists');
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
     this.logger.log('Hashed password', hashedPassword);
 
+    let emailVerified = false;
+    try {
+      emailVerified = await this.sendValidationEmail(email, true);
+    } catch (error) {
+      this.logger.error('Error sending validation email:', error);
+    }
+    if (!emailVerified) {
+      throw new BadRequestException(
+        'Error sending validation email. Please try again later.',
+      );
+    }
     const newUser = await this.userModel.create({
       firstName,
       lastName,
       email,
       password: hashedPassword,
-      emailVerified: false,
     });
-    await this.sendValidationEmail(email);
     const token = this.jwtService.sign({ id: newUser._id });
     this.logger.log('Validation email sent');
     return { token };
@@ -78,25 +86,32 @@ export class AuthService {
     return { token };
   }
 
-  async sendValidationEmail(email: string): Promise<boolean> {
+  async sendValidationEmail(
+    email: string,
+    isChecked: boolean,
+  ): Promise<boolean> {
     const token = crypto.randomBytes(20).toString('hex');
     const verificationLink = `http://localhost:3000/auth/validate?token=${token}`;
+
     const mailOptions = {
       from: 'piximind@gmail.com',
       to: email,
       subject: 'Email Verification',
       html: `
-        <p>Dear User,</p>
-        <p>Please click the following link to verify your email:</p>
-        <a href="${verificationLink}">Verify Email</a>
+          <p>Dear User,</p>
+          ${
+            isChecked
+              ? `<p>Please click the following link to verify your email:</p>
+               <a href="${verificationLink}">Verify Email</a>`
+              : '<p>Email verification is not required.</p>'
+          }
       `,
     };
     try {
-      const info = await this.transporter.sendMail(mailOptions);
-      this.logger.log('Validation email sent:', info.messageId);
-      return true;
+      await this.transporter.sendMail(mailOptions);
+      return isChecked;
     } catch (error) {
-      this.logger.error('Error sending validation email:', error);
+      console.error('Error sending email:', error);
       return false;
     }
   }
