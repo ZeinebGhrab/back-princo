@@ -1,20 +1,25 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
+import { User } from './user.schema';
+import { ObjectId } from 'typeorm';
 
 @Schema()
 export class Facture extends Document {
   @Prop()
-  codePostale: string;
+  readonly code: string;
   @Prop()
-  pays: string;
+  readonly codePostale: string;
   @Prop()
-  ville: string;
+  readonly pays: string;
   @Prop()
-  raisonSociale: string;
+  readonly ville: string;
   @Prop()
-  matriculeFisacle: string;
+  readonly raisonSociale: string;
   @Prop()
-  adresse: string;
-}
+  readonly matriculeFisacle: string;
+  readonly adresse: string;
 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  user: User;
+}
 export const FactureSchema = SchemaFactory.createForClass(Facture);

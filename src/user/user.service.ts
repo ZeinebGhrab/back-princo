@@ -1,50 +1,45 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../auth/schemas/user.schema';
-
+import * as nodemailer from 'nodemailer';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/user.dto';
-import { FactureDto, UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
-import { Facture } from '../auth/schemas/facture.schema';
+import { SignUpDto } from '../auth/dto/signup.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(Facture.name) private factureModel: Model<Facture>,
-  ) {}
-
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
-    const { firstName, lastName, email, password } = createUserDto;
-    const checkEmail = await this.userModel.findOne({ email });
-    const checkName = await this.userModel.findOne({ firstName });
-    const checkLast = await this.userModel.findOne({ lastName });
-    if (checkEmail) {
-      throw new ConflictException('email already exists');
-    }
-    if (checkEmail && checkLast && checkName) {
-      throw new ConflictException('user already exists');
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new this.userModel({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
+  private logger = new Logger('UserService ');
+  private readonly transporter;
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private jwtService: JwtService,
+  ) {
+    this.transporter = nodemailer.createTransport({
+      service: 'Gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'mahdisahnoun31@gmail.com',
+        pass: 'wyuo mfax zrbi bloq',
+      },
     });
-    return newUser.save();
   }
-
   async showUsers(): Promise<User[]> {
-    return this.userModel.find();
+    return this.userModel.find().populate(['factures']).exec();
   }
 
   async getUserById(id: string): Promise<User> {
-    return this.userModel.findById(id);
+    return this.userModel.findById(id).populate(['factures']).exec();
   }
 
   async updateUser(
@@ -52,7 +47,6 @@ export class UserService {
     updateUserDto: UpdateUserDto,
     enterPassword: string,
   ): Promise<User> {
-    const { email, password, factures } = updateUserDto;
     const existingUser = await this.userModel.findById(id);
     if (!existingUser) {
       throw new ConflictException('User not found');
@@ -64,29 +58,13 @@ export class UserService {
     if (!isPasswordCorrect) {
       throw new UnauthorizedException('Incorrect password');
     }
-    if (email && email !== existingUser.email) {
-      const checkEmail = await this.userModel.findOne({ email });
-      if (checkEmail) {
-        throw new ConflictException('Email already exists');
-      }
-    }
-    if (password) {
-      updateUserDto.password = await bcrypt.hash(password, 10);
-    }
-    if (factures) {
-      existingUser.factures = factures.map((factureDto: FactureDto) => {
-        const facture = new this.factureModel();
-        facture.codePostale = factureDto.codePostale;
-        facture.pays = factureDto.pays;
-        facture.ville = factureDto.ville;
-        facture.raisonSociale = factureDto.raisonSociale;
-        facture.matriculeFisacle = factureDto.matriculeFisacle;
-        facture.adresse = factureDto.adresse;
-        return facture;
-      });
-    }
-
-    return await existingUser.save();
+    const updatedUser = {
+      ...existingUser.toObject(),
+      ...updateUserDto,
+    };
+    return await this.userModel.findByIdAndUpdate(id, updatedUser, {
+      new: true,
+    });
   }
 
   async deleteUser(id: string, enterPassword: string): Promise<User> {
@@ -106,5 +84,53 @@ export class UserService {
       throw new UnauthorizedException('User not found');
     }
     return deletedUser;
+  }
+  async signUp(signUpDto: SignUpDto): Promise<{ message: string }> {
+    const { firstName, lastName, email, password } = signUpDto;
+    const checkUser = await this.userModel.findOne({ email });
+    if (checkUser) {
+      throw new ConflictException('Email already exists');
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = await this.userModel.create({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+    });
+    const token = this.jwtService.sign({ id: newUser._id });
+    newUser.emailVerificationToken = token;
+    await newUser.save();
+    await this.sendEmailVerification(email, token);
+    this.logger.log('Verification email sent');
+    return { message: 'Verification email sent' };
+  }
+  async sendEmailVerification(email: string, token: string): Promise<void> {
+    const mailOptions = {
+      from: 'Company <piximind@gmail.com>',
+      to: email,
+      subject: 'Verify Your Email Address',
+      html: `
+        <p>Hello,</p>
+        <p>Please click on the following link to verify your email address:</p>
+        <p><a href="http://localhost:3000/auth/verify-email/${token}">Verify Email</a></p>
+        <p>If you did not request this, please ignore this email.</p>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    const user = await this.userModel.findOne({
+      emailVerificationToken: token,
+    });
+    if (!user) {
+      throw new BadRequestException('Invalid verification token');
+    }
+    user.emailVerified = true;
+    user.emailVerificationToken = undefined;
+    await user.save();
+
+    return { message: 'Email verified successfully' };
   }
 }
