@@ -2,20 +2,24 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 import { Facture } from './facture.schema';
 
-// Update the import
-
 @Schema({ timestamps: true })
 export class User extends Document {
   @Prop()
-  firstName: string;
+  readonly firstName: string;
   @Prop()
-  lastName: string;
-  @Prop({ unique: true })
-  email: string;
+  readonly lastName: string;
+  @Prop({ required: true })
+  readonly email: string;
   @Prop()
-  password: string;
+  emailVerificationToken: string;
+  @Prop()
+  emailVerified: boolean;
+  @Prop()
+  tél: string;
+  @Prop()
+  readonly password: string;
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Facture' }] })
-  factures: Facture[];
+  readonly factures: Facture[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

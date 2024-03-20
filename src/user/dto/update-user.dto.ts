@@ -7,38 +7,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-
-export class FactureDto {
-  @IsString()
-  @IsOptional()
-  @IsNotEmpty()
-  raisonSociale?: string;
-
-  @IsString()
-  @IsOptional()
-  @IsNotEmpty()
-  matriculeFisacle?: string;
-
-  @IsString()
-  @IsOptional()
-  @IsNotEmpty()
-  adresse?: string;
-
-  @IsString()
-  @IsOptional()
-  @IsNotEmpty()
-  pays?: string;
-
-  @IsString()
-  @IsOptional()
-  @IsNotEmpty()
-  ville?: string;
-
-  @IsString()
-  @IsOptional()
-  @IsNotEmpty()
-  codePostale?: string;
-}
+import { FactureDto } from '../../facture/dto/facture.dto';
 
 export class UpdateUserDto {
   @IsString()
@@ -59,6 +28,11 @@ export class UpdateUserDto {
   @IsOptional()
   @IsNotEmpty()
   password?: string;
+
+  @IsString()
+  @IsOptional()
+  @IsNotEmpty()
+  tél?: string;
 
   @IsOptional()
   @IsArray()
