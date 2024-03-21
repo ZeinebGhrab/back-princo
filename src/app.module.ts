@@ -5,7 +5,6 @@ import { AuthModule } from './auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
-import { FactureModule } from './facture/facture.module';
 import * as cors from 'cors';
 @Module({
   imports: [
@@ -20,7 +19,6 @@ import * as cors from 'cors';
     }),
     AuthModule,
     UserModule,
-    FactureModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -30,7 +28,7 @@ export class AppModule {
     consumer
       .apply(
         cors({
-          origin: 'http://localhost:3001',
+          origin: 'http://localhost:5173',
           method: RequestMethod.ALL,
         }),
       )

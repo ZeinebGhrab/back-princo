@@ -3,29 +3,25 @@ import {
   Get,
   Post,
   Put,
-  Delete,
   Param,
   Body,
   HttpException,
   Redirect,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from '../auth/schemas/user.schema';
+import { UpdateUserDto } from '../dto/update-user.dto';
+import { User } from '../schemas/user.schema';
 import mongoose from 'mongoose';
-import { SignUpDto } from '../auth/dto/signup.dto';
+import { SignUpDto } from '../dto/signup.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('users')
 export class UserController {
   private logger = new Logger('UserService ');
   private readonly transporter;
   constructor(private readonly userService: UserService) {}
-  @Get()
-  async showUsers(): Promise<User[]> {
-    return this.userService.showUsers();
-  }
 
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<User> {
@@ -40,17 +36,12 @@ export class UserController {
   async updateUser(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @Body('enterPassword') enterPassword: string,
   ): Promise<User> {
     const isValid = mongoose.Types.ObjectId.isValid(id);
     if (!isValid) {
       throw new HttpException('User not valid', 404);
     }
-    const updateUser = await this.userService.updateUser(
-      id,
-      updateUserDto,
-      enterPassword,
-    );
+    const updateUser = await this.userService.updateUser(id, updateUserDto);
     if (!updateUser) {
       throw new HttpException('There is no updated user', 404);
     }
@@ -58,22 +49,6 @@ export class UserController {
     return updateUser;
   }
 
-  @Delete(':id')
-  async deleteUser(
-    @Param('id') id: string,
-    @Body('enterPassword') enterPassword: string,
-  ): Promise<User> {
-    const isValid = mongoose.Types.ObjectId.isValid(id);
-    if (!isValid) {
-      throw new HttpException('User not valid', 404);
-    }
-    try {
-      const deletedUser = await this.userService.deleteUser(id, enterPassword);
-      return deletedUser;
-    } catch (error) {
-      throw new HttpException('Internal Server Error', 500);
-    }
-  }
   @Post('/signup')
   signUp(@Body() signUpDto: SignUpDto): Promise<{ message: string }> {
     this.logger.log('Signup request', JSON.stringify(signUpDto));

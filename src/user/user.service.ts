@@ -3,17 +3,17 @@ import {
   ConflictException,
   Injectable,
   Logger,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from '../auth/schemas/user.schema';
+import { User } from '../schemas/user.schema';
 import * as nodemailer from 'nodemailer';
 import { Model } from 'mongoose';
-import { CreateUserDto } from './dto/user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
-import { SignUpDto } from '../auth/dto/signup.dto';
+import { SignUpDto } from '../dto/signup.dto';
 import { JwtService } from '@nestjs/jwt';
+import { InvoiceDetails } from 'src/schemas/invoice.details.schema';
+import { InvoiceDetailsDto } from 'src/dto/invoiceDetails.dto';
 
 @Injectable()
 export class UserService {
@@ -21,6 +21,8 @@ export class UserService {
   private readonly transporter;
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(InvoiceDetails.name)
+    private factureModel: Model<InvoiceDetails>,
     private jwtService: JwtService,
   ) {
     this.transporter = nodemailer.createTransport({
@@ -34,57 +36,40 @@ export class UserService {
       },
     });
   }
-  async showUsers(): Promise<User[]> {
-    return this.userModel.find().populate(['factures']).exec();
-  }
 
   async getUserById(id: string): Promise<User> {
-    return this.userModel.findById(id).populate(['factures']).exec();
+    return this.userModel.findById(id).exec();
   }
-
   async updateUser(
     id: string,
     updateUserDto: UpdateUserDto,
-    enterPassword: string,
+    password?: string,
+    invoiceDetails?: InvoiceDetailsDto,
   ): Promise<User> {
     const existingUser = await this.userModel.findById(id);
     if (!existingUser) {
       throw new ConflictException('User not found');
     }
-    const isPasswordCorrect = await bcrypt.compare(
-      enterPassword,
-      existingUser.password,
-    );
-    if (!isPasswordCorrect) {
-      throw new UnauthorizedException('Incorrect password');
+
+    const updatedFields: any = { ...updateUserDto };
+
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updatedFields.password = hashedPassword;
     }
-    const updatedUser = {
-      ...existingUser.toObject(),
-      ...updateUserDto,
-    };
-    return await this.userModel.findByIdAndUpdate(id, updatedUser, {
-      new: true,
-    });
+
+    if (invoiceDetails) {
+      updatedFields.invoiceDetails = invoiceDetails;
+    }
+
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      id,
+      updatedFields,
+      { new: true },
+    );
+    return updatedUser;
   }
 
-  async deleteUser(id: string, enterPassword: string): Promise<User> {
-    const existingUser = await this.userModel.findById(id);
-    if (!existingUser) {
-      throw new ConflictException('User not found');
-    }
-    const isPasswordCorrect = await bcrypt.compare(
-      enterPassword,
-      existingUser.password,
-    );
-    if (!isPasswordCorrect) {
-      throw new UnauthorizedException('Incorrect password');
-    }
-    const deletedUser = await this.userModel.findByIdAndDelete(id);
-    if (!deletedUser) {
-      throw new UnauthorizedException('User not found');
-    }
-    return deletedUser;
-  }
   async signUp(signUpDto: SignUpDto): Promise<{ message: string }> {
     const { firstName, lastName, email, password } = signUpDto;
     const checkUser = await this.userModel.findOne({ email });

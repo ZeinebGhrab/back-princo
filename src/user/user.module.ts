@@ -2,13 +2,16 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { User, UserSchema } from '../auth/schemas/user.schema';
-import { Facture, FactureSchema } from '../auth/schemas/facture.schema';
-import { PassportModule } from '@nestjs/passport'; // Import PassportModule
-import { ConfigModule, ConfigService } from '@nestjs/config'; // Import ConfigModule and ConfigService
-import { JwtModule } from '@nestjs/jwt'; // Import JwtModule
-import { JwtStrategy } from '../auth/autorization.strategy'; // Import JwtStrategy
-
+import { User, UserSchema } from '../schemas/user.schema';
+import {
+  InvoiceDetails,
+  InvoiceDetailsSchema,
+} from '../schemas/invoice.details.schema';
+import { PassportModule } from '@nestjs/passport';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from '../auth/autorization.strategy';
+import { jwtConstants } from 'src/auth/constants';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -17,15 +20,15 @@ import { JwtStrategy } from '../auth/autorization.strategy'; // Import JwtStrate
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('SECRET_NAME'),
+        secret: jwtConstants.secret,
         signOptions: {
-          expiresIn: config.get<string | number>('EXPIRATION'),
+          //expiresIn: config.get<string | number>('EXPIRATION'),
         },
       }),
     }),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
-      { name: Facture.name, schema: FactureSchema },
+      { name: InvoiceDetails.name, schema: InvoiceDetailsSchema },
     ]),
   ],
   controllers: [UserController],

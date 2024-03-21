@@ -15,6 +15,5 @@ export class SignUpDto {
   @IsNotEmpty()
   @IsString()
   @MinLength(8)
-  //@MaxLength(20)
   readonly password: string;
 }
