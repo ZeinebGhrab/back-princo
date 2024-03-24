@@ -6,20 +6,17 @@ import {
   Param,
   Body,
   HttpException,
-  Redirect,
   Logger,
-  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { User } from '../schemas/user.schema';
 import mongoose from 'mongoose';
 import { SignUpDto } from '../dto/signup.dto';
-import { AuthGuard } from '@nestjs/passport';
 
 @Controller('users')
 export class UserController {
-  private logger = new Logger('UserService ');
+  private logger = new Logger('UserService');
   private readonly transporter;
   constructor(private readonly userService: UserService) {}
 
@@ -54,19 +51,24 @@ export class UserController {
     this.logger.log('Signup request', JSON.stringify(signUpDto));
     return this.userService.signUp(signUpDto);
   }
-  @Get('/validate/:email/:token')
-  async validateEmail(
-    @Param('email') email: string,
-    @Param('token') token: string,
-  ): Promise<{ message: string }> {
-    await this.userService.sendEmailVerification(email, token);
-    this.logger.log('Validate email request', email);
-    return { message: 'Validation email sent successfully' };
+
+  @Post('/verify')
+  async verifyEmail(
+    @Body('token') token: string,
+  ): Promise<{ token: string; id: string }> {
+    return await this.userService.verifyEmail(token);
   }
-  @Get('verify-email/:token')
-  @Redirect('http://localhost:3000/auth/login', 307)
-  async verifyEmail(@Param('token') token: string) {
-    const { message } = await this.userService.verifyEmail(token);
-    return { message, token };
+
+  @Post('/forgotPassword')
+  async forgotPassword(@Body('email') email: string): Promise<boolean> {
+    return this.userService.sendEmailForgotPassword(email);
+  }
+
+  @Post('/resetPassword')
+  async resetPassword(
+    @Body('email') email: string,
+    @Body('password') password: string,
+  ): Promise<{ token: string; id: string }> {
+    return this.userService.resetPassword(email, password);
   }
 }

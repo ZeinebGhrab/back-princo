@@ -15,7 +15,7 @@ export class User extends Document {
   @Prop()
   readonly gender: string;
   @Prop()
-  readonly birthDate: string;
+  readonly birthDate: Date;
   @Prop()
   readonly tel: string;
   @Prop()
@@ -26,6 +26,8 @@ export class User extends Document {
   emailVerificationToken: string;
   @Prop()
   emailVerified: boolean;
+  @Prop()
+  resetPasswordToken: string;
   @Prop({ type: InvoiceDetails })
   readonly invoiceDetails: InvoiceDetails;
 }

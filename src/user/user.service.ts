@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   Logger,
 } from '@nestjs/common';
@@ -90,32 +92,69 @@ export class UserService {
     this.logger.log('Verification email sent');
     return { message: 'Verification email sent' };
   }
+
   async sendEmailVerification(email: string, token: string): Promise<void> {
     const mailOptions = {
-      from: 'Company <piximind@gmail.com>',
+      from: ' Princo <princo@gmail.com>',
       to: email,
       subject: 'Verify Your Email Address',
       html: `
-        <p>Hello,</p>
-        <p>Please click on the following link to verify your email address:</p>
-        <p><a href="http://localhost:3000/auth/verify-email/${token}">Verify Email</a></p>
-        <p>If you did not request this, please ignore this email.</p>
+      <p>Bonjour,</p>
+      <p>Veuillez cliquer sur le lien suivant pour vérifier votre adresse e-mail :</p>
+      <p><a href="http://localhost:5173/verify?token=${token}">Vérifier l'e-mail</a></p>
+      <p>Si vous n'avez pas fait cette demande, veuillez ignorer cet e-mail.</p>
       `,
     };
-
     await this.transporter.sendMail(mailOptions);
   }
-  async verifyEmail(token: string): Promise<{ message: string }> {
-    const user = await this.userModel.findOne({
-      emailVerificationToken: token,
-    });
+  async verifyEmail(token: string): Promise<{ token: string; id: string }> {
+    const user = await this.userModel.findOneAndUpdate(
+      { emailVerificationToken: token },
+      { $set: { emailVerified: true, emailVerificationToken: '' } },
+      { new: true },
+    );
     if (!user) {
       throw new BadRequestException('Invalid verification token');
     }
-    user.emailVerified = true;
-    user.emailVerificationToken = undefined;
-    await user.save();
+    return { token: this.jwtService.sign({ id: user._id }), id: user._id };
+  }
 
-    return { message: 'Email verified successfully' };
+  async sendEmailForgotPassword(email: string): Promise<boolean> {
+    const user = await this.userModel.findOne({ email: email });
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    const resetLink = `http://localhost:5173/verify?email=${email}`;
+    const mailOptions = {
+      from: `Princo <princo@gmail.com>`,
+      to: email,
+      subject: 'Forgotten Password',
+      html: `
+      <p>Bonjour !</p>
+      <p>Si vous avez demandé à réinitialiser votre mot de passe, cliquez sur le lien ci-dessous :</p>
+      <p><a href=${resetLink}>Réinitialiser mon mot de passe</a></p>      
+      `,
+    };
+    try {
+      await this.transporter.sendMail(mailOptions);
+      return true;
+    } catch (error) {
+      console.log('Error sending email: ', error);
+      return false;
+    }
+  }
+
+  async resetPassword(
+    email: string,
+    password: string,
+  ): Promise<{ token: string; id: string }> {
+    const user = await this.userModel.findOneAndUpdate(
+      { email },
+      { $set: { password: await bcrypt.hash(password, 10) } },
+    );
+    if (!user) {
+      throw new ConflictException('User not found');
+    }
+    return { token: this.jwtService.sign({ id: user._id }), id: user._id };
   }
 }
