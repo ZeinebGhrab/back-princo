@@ -1,6 +1,5 @@
-import { ConflictException, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
 import { User } from '../schemas/user.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { Connector } from 'src/schemas/connector.schema';
@@ -10,9 +9,10 @@ import { UpdateConnectorDto } from 'src/dto/update-connector.dto';
 @Injectable()
 export class ConnectorService {
   constructor(
-    @InjectModel(Connector.name)
-    private connectorModel: mongoose.Model<Connector>,
-    @InjectModel(User.name) private readonly userModel: Model<User>,
+    @Inject('CONNECTOR_MODEL')
+    private readonly connectorModel: Model<Connector>,
+    @Inject('USER_MODEL')
+    private readonly userModel: Model<User>,
   ) {}
   async create(
     connectorData: CreateConnectorDto,

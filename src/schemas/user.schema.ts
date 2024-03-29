@@ -22,12 +22,12 @@ export class User extends Document {
   readonly country: string;
   @Prop()
   readonly profile: string;
-  @Prop()
+  @Prop({ default: '' })
   emailVerificationToken: string;
-  @Prop()
+  @Prop({ default: false })
   emailVerified: boolean;
-  @Prop()
-  resetPasswordToken: string;
+  @Prop({ default: false })
+  resetPassword: boolean;
   @Prop({ type: InvoiceDetails })
   readonly invoiceDetails: InvoiceDetails;
 }

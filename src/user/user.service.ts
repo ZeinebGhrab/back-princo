@@ -3,28 +3,25 @@ import {
   ConflictException,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../schemas/user.schema';
 import * as nodemailer from 'nodemailer';
 import { Model } from 'mongoose';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import * as bcrypt from 'bcryptjs';
 import { SignUpDto } from '../dto/signup.dto';
 import { JwtService } from '@nestjs/jwt';
-import { InvoiceDetails } from 'src/schemas/invoice.details.schema';
 import { InvoiceDetailsDto } from 'src/dto/invoiceDetails.dto';
+import { encodePassword } from 'src/utils/bcrypt';
 
 @Injectable()
 export class UserService {
-  private logger = new Logger('UserService ');
+  private logger = new Logger('UserService');
   private readonly transporter;
   constructor(
-    @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(InvoiceDetails.name)
-    private factureModel: Model<InvoiceDetails>,
+    @Inject('USER_MODEL') private readonly userModel: Model<User>,
     private jwtService: JwtService,
   ) {
     this.transporter = nodemailer.createTransport({
@@ -56,7 +53,7 @@ export class UserService {
     const updatedFields: any = { ...updateUserDto };
 
     if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = encodePassword(password);
       updatedFields.password = hashedPassword;
     }
 
@@ -76,9 +73,9 @@ export class UserService {
     const { firstName, lastName, email, password } = signUpDto;
     const checkUser = await this.userModel.findOne({ email });
     if (checkUser) {
-      throw new ConflictException('Email already exists');
+      throw new ConflictException('Un compte avec cet e-mail existe déjà.');
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = encodePassword(password);
     const newUser = await this.userModel.create({
       firstName,
       lastName,
@@ -120,7 +117,10 @@ export class UserService {
   }
 
   async sendEmailForgotPassword(email: string): Promise<boolean> {
-    const user = await this.userModel.findOne({ email: email });
+    const user = await this.userModel.findOneAndUpdate(
+      { email },
+      { $set: { resetPassword: true } },
+    );
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
@@ -149,11 +149,13 @@ export class UserService {
     password: string,
   ): Promise<{ token: string; id: string }> {
     const user = await this.userModel.findOneAndUpdate(
-      { email },
-      { $set: { password: await bcrypt.hash(password, 10) } },
+      { email, resetPassword: true },
+      { $set: { password: encodePassword(password), resetPassword: false } },
     );
     if (!user) {
-      throw new ConflictException('User not found');
+      throw new ConflictException(
+        'Votre lien de réinitialisation a été utilisé et a expiré.',
+      );
     }
     return { token: this.jwtService.sign({ id: user._id }), id: user._id };
   }
