@@ -6,15 +6,14 @@ import {
   Param,
   Put,
   Delete,
-  Req,
   UseGuards,
   Logger,
 } from '@nestjs/common';
 import { ConnectorService } from './connector.service';
 import { Connector } from 'src/schemas/connector.schema';
-import { CreateConnectorDto } from 'src/dto/connector.dto';
-import { UpdateConnectorDto } from 'src/dto/update-connector.dto';
+import { ConnectorDto } from 'src/dto/connector.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Types } from 'mongoose';
 
 @Controller('connector')
 @UseGuards(JwtAuthGuard)
@@ -22,15 +21,10 @@ export class ConnectorController {
   private logger = new Logger('ConnectorController');
   constructor(private readonly connectorService: ConnectorService) {}
   @Post()
-  async create(
-    @Body() connectorData: CreateConnectorDto,
-    @Req() req,
-  ): Promise<{ connector: Connector }> {
-    const userId = req.user._id;
-    this.logger.log(userId);
-    const connector = await this.connectorService.create(connectorData, userId);
+  async create(@Body() connectorData: ConnectorDto): Promise<Types.ObjectId> {
+    const connector = await this.connectorService.create(connectorData);
     this.logger.log(connector);
-    return { connector };
+    return connector;
   }
   @Get('connectors/:id')
   findAll(@Param('id') id: string): Promise<Connector[]> {
@@ -43,8 +37,8 @@ export class ConnectorController {
   @Put(':id')
   update(
     @Param('id') id: string,
-    @Body() updateConnectorDto: UpdateConnectorDto,
-  ): Promise<Connector> {
+    @Body() updateConnectorDto: ConnectorDto,
+  ): Promise<void> {
     this.logger.log(JSON.stringify(updateConnectorDto));
     return this.connectorService.update(id, updateConnectorDto);
   }

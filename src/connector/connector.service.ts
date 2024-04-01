@@ -1,10 +1,9 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User } from '../schemas/user.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { Connector } from 'src/schemas/connector.schema';
-import { CreateConnectorDto } from 'src/dto/connector.dto';
-import { UpdateConnectorDto } from 'src/dto/update-connector.dto';
+import { ConnectorDto } from 'src/dto/connector.dto';
 
 @Injectable()
 export class ConnectorService {
@@ -14,59 +13,65 @@ export class ConnectorService {
     @Inject('USER_MODEL')
     private readonly userModel: Model<User>,
   ) {}
-  async create(
-    connectorData: CreateConnectorDto,
-    user: User,
-  ): Promise<Connector> {
-    const { connectorName } = connectorData;
+
+  async create(connectorData: ConnectorDto): Promise<Types.ObjectId> {
+    const { connectorName, userId } = connectorData;
     const checkConnector = await this.connectorModel.findOne({
       connectorName,
+      user: userId,
     });
     if (checkConnector) {
-      throw new ConflictException("Nom d'imprimante est déja existe");
+      throw new ConflictException('Nom du connecteur est déja existe');
     }
-    //generate api_key for the printer (uuidv4())
     const apiKey = uuidv4();
     const newConnector = new this.connectorModel({
-      user: user,
+      user: userId,
       apiKey: apiKey,
       ...connectorData,
     });
     await newConnector.save();
     await this.userModel.findOneAndUpdate(
-      { _id: user._id },
+      { _id: userId },
       { $push: { connectors: newConnector } },
     );
-    return newConnector;
+    return newConnector._id;
   }
+
   async show(id: string): Promise<Connector[]> {
     const connectors = await this.connectorModel.find({ user: id }).exec();
     return connectors;
   }
+
   async findById(id: string): Promise<Connector> {
     const connectorId = await this.connectorModel.findById(id);
     if (!connectorId) {
-      throw new ConflictException("imprimante n'est pas existe");
+      throw new ConflictException("Le Connecteur n'existe pas");
     }
     return this.connectorModel.findById(id).exec();
   }
-  async update(
-    id: string,
-    updateConnectorDto: UpdateConnectorDto,
-  ): Promise<Connector> {
-    return this.connectorModel
+
+  async update(id: string, updateConnectorDto: ConnectorDto): Promise<void> {
+    const { connectorName, userId } = updateConnectorDto;
+    const checkConnector = await this.connectorModel.findOne({
+      connectorName,
+      user: userId,
+    });
+    if (checkConnector) {
+      throw new ConflictException('Nom du connecteur est déja existe');
+    }
+    await this.connectorModel
       .findByIdAndUpdate(id, updateConnectorDto, { new: true })
       .exec();
   }
-  async remove(id: string): Promise<Connector> {
+
+  async remove(id: string): Promise<void> {
     const connector = await this.connectorModel.findByIdAndDelete(id);
     if (!connector) {
-      throw new ConflictException("L'imprimante n'existe pas");
+      throw new ConflictException("Le connecteur n'existe pas");
     }
     await this.userModel.updateMany(
       { connectors: connector._id },
       { $pull: { connectors: connector._id } },
     );
-    return connector;
   }
 }

@@ -47,7 +47,7 @@ export class UserService {
   ): Promise<User> {
     const existingUser = await this.userModel.findById(id);
     if (!existingUser) {
-      throw new ConflictException('User not found');
+      throw new ConflictException('Utilisateur non trouvé');
     }
 
     const updatedFields: any = { ...updateUserDto };

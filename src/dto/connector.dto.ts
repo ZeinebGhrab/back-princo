@@ -1,11 +1,11 @@
-import { IsEmpty, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export class CreateConnectorDto {
+export class ConnectorDto {
   @IsNotEmpty()
   @IsString()
   readonly connectorName: string;
 
-  @IsEmpty({ message: 'You cannot pass user id' })
+  @IsNotEmpty()
   readonly userId: string;
 
   @IsNotEmpty()
