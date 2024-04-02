@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Logger,
+  Query,
 } from '@nestjs/common';
 import { ConnectorService } from './connector.service';
 import { Connector } from 'src/schemas/connector.schema';
@@ -27,8 +28,12 @@ export class ConnectorController {
     return connector;
   }
   @Get('connectors/:id')
-  findAll(@Param('id') id: string): Promise<Connector[]> {
-    return this.connectorService.show(id);
+  findAll(
+    @Param('id') id: string,
+    @Query('skip') skip: string,
+    @Query('limit') limit: string,
+  ): Promise<Connector[]> {
+    return this.connectorService.show(id, skip, limit);
   }
   @Get(':id')
   findOne(@Param('id') id: string): Promise<Connector> {

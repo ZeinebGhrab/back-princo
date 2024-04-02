@@ -37,8 +37,12 @@ export class ConnectorService {
     return newConnector._id;
   }
 
-  async show(id: string): Promise<Connector[]> {
-    const connectors = await this.connectorModel.find({ user: id }).exec();
+  async show(id: string, skip: string, limit: string): Promise<Connector[]> {
+    const connectors = await this.connectorModel
+      .find({ user: id })
+      .skip(parseInt(skip))
+      .limit(parseInt(limit))
+      .exec();
     return connectors;
   }
 
