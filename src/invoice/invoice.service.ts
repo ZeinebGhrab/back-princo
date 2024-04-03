@@ -8,7 +8,7 @@ import { Model } from 'mongoose';
 @Injectable()
 export class InvoiceService {
   constructor(
-    @Inject('Invoice_MODEL') private readonly invoiceModel: Model<Invoice>,
+    @Inject('INVOICE_MODEL') private readonly invoiceModel: Model<Invoice>,
   ) {}
 
   async showInvoices(id: string): Promise<Invoice[]> {
@@ -32,7 +32,7 @@ export class InvoiceService {
     invoiceNumber: string,
     amount: number,
   ): Promise<Buffer> {
-    const templatePath = 'C:/Users/a/Desktop/backend/views/invoice.ejs';
+    const templatePath = 'C:/Users/a/Desktop/backend/views/invoice.hbs';
     const template = fs.readFileSync(templatePath, 'utf8');
     const compiledTemplate = ejs.compile(template);
     const invoiceData = {
@@ -53,7 +53,7 @@ export class InvoiceService {
     invoiceNumber: string,
     amount: number,
   ): Promise<void> {
-    const templatePath = 'C:/Users/a/Desktop/backend/views/invoice.ejs';
+    const templatePath = 'C:/Users/a/Desktop/backend/views/invoice.hbs';
     const template = fs.readFileSync(templatePath, 'utf8');
     const compiledTemplate = ejs.compile(template);
     const invoiceData = {

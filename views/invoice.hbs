@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facture</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+/* Général */
+.container {
+  display: flex;
+  justify-content: space-between;
+  clear: both;
+}
+
+/* Images */
+img {
+    height: 20px;
+}
+
+/* Facture */
+body{
+    margin: 35px;
+}
+
+.invoice-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 0px;
+    gap: 4px;
+    font-size: 14px;
+    color: #666371;
+}
+
+.facture-title {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: bold;
+    font-size: 24px;
+    line-height: 28px;
+    display: flex;
+    align-items: center;
+    text-align: right;
+    color: #79c300;
+}
+
+/* Réf. */
+.ref {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 14px;
+    color:#000000
+}
+
+.app-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0px;
+}
+
+.client-section {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  margin-bottom: 45px;
+  background-color: #00EBB4;
+  border-radius: 8px; /* Ajout de la bordure arrondie */
+  border: 1px solid #00EBB4;
+  padding : 25px;
+
+}
+
+/* Facture à */
+.facture-a {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 16px;
+    color: #120D26;
+}
+
+/* 58 rue Ernest Renan, Chelles, Île-de-France */
+.address {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+/* Condimentum auctor */
+.condimentum-auctor {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 16px;
+    text-align: right;
+    color: #120D26;
+    margin-bottom: 2px;
+}
+
+/* 21 Place Charles de Gaulle, Villenave-d'ornon, Aquitaine */
+.place-address {
+    width: 170px;
+    height: 42px;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 14px;
+    text-align: right;
+    color: #666371;
+}
+
+/* 350,00 € échéance abonnement 2022 */
+.echeance {
+    margin-bottom: 25px;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 500;
+    color: #120D26;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.table1 {
+    width: 100%;
+}
+.table1 td, th {
+    text-align: left;
+    height: 30px;
+}
+
+.table1 th{
+    border-bottom: 1px solid #E3E3E6;
+}
+
+/* Designation */
+.designation {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    color: #666371;
+}
+
+/* Qté, P.U., Remise, Prix, TVA */
+.qte,
+.pu,
+.remise,
+.prix,
+.tva {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    color: #666371;
+}
+/* 1, 350, 1%, 0,00% */
+.amounts {
+    height: 16px;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 16px;
+    color: #000000;
+}
+
+/* 14 Sept. 2021 - 14 Sept. 2022 */
+.dates {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 13px;
+    line-height: 16px;
+    color: #120D26;
+    margin-top: 6px;
+}
+
+.table2 {
+    float: right; 
+    margin-top: 60px;
+    margin-bottom: 30px;
+}
+
+.table2 td {
+    width: 30%;
+    height: 30px;
+}
+.table2 td {
+   border-bottom: 1px solid #E3E3E6;
+}
+
+
+/* Total HT, Total TVA, Total TTC */
+.total-ht,
+.total-tva,
+.total-ttc {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    text-align: right;
+}
+
+/* Total HT, Total TVA, Total TTC : title */
+.title-ht,
+.title-tva,
+.title-ttc {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    color: #666371;
+}
+
+.container-montant {
+  display: flex;
+  justify-content: space-between;
+  clear: both;
+  background-color: #00EBB4;
+  border-radius: 8px; 
+  border: 1px solid #00EBB4;
+  padding : 25px;
+}
+
+/* Montant à payer */
+.montant-a-payer {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 16px;
+    color: #120D26;
+}
+
+/* 350,00€ */
+.total-amount {
+    width: 44px;
+    height: 14px;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 14px;
+    text-align: right;
+    color: #120D26;
+    padding-right: 25px;
+}
+
+
+
+
+
+
+/* Weven app. */
+.weven-app {
+    width: 76px;
+    height: 16px;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 16px;
+    display: flex;
+    align-items: center;
+    color: #000000;
+}
+
+
+/* Frais d’abonnement annuel WevenApp */
+.abonnement-frais {
+    position: absolute;
+    width: 162px;
+    height: 32px;
+    left: 34px;
+    top: 416px;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: #000000;
+}
+
+
+
+
+
+    </style>
+
+</head>
+<body>
+    <div>
+        <div class="container">
+            <div class="app-section">
+                <img src="logo.jpg"/>
+                <span> Princo app.</span>
+                <span>58 rue Ernest Renan, Chelles, ile-de-France</span>
+                <span>(+33)7 35 55 31 15</span>
+                <span>support@princo.com<span>
+            </div>
+          <div class="invoice-section">
+          <span class="facture-title" >Facture</span>
+          <span >Réf: <span class="ref">#7307</span></span>
+          <span >Date d'émission: 14 Sept.2022</span>
+          <span>Date d'échéance: 14 Sept.2022</span>
+          </div>
+        </div>
+       <div>
+         <div class="client-section">
+            <div class="facture-a">Facture à:</div>
+            <div class="invoiceSection">
+                    <div class="condimentum-auctor">condimentum auctor</div>
+                <div class="place-address">
+                <span>21 Place Charle de Gaulle,</span>
+                <span>Villenave d'ornon, Aquitaine</span>
+                <span>condiauctor@email.com</span>
+                </div>
+
+            </div>
+        </div>
+       </div>
+        <div class="echeance">
+            350.00 € échéance abonnement 2022
+        </div>
+        <table class="table1" >
+            <thead>
+                <tr>
+                <th class="designation">Designation</th>
+                <th class="qte">Qté</th>
+                <th class="pu">P.U.</th>
+                <th class="remise">Remise</th>
+                <th class="prix">Prix</th>
+                <th class="tva">TVA</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="amounts">
+                        Frais d'impression de ticket
+                        <div class="dates">14 Sept. 2021 - 14 Sept. 2022</div>
+                    </td>
+                    <td class="amounts">1</td>
+                    <td class="amounts">350.00 €</td>
+                    <td class="amounts">0.00 %</td>
+                    <td class="amounts">350.00 €</td>
+                    <td class="amounts">1%</td>
+                </tr>
+            </tbody>
+        </table>
+        <table class="table2">
+            <tr>
+                <td class="title-ht">Total HT</td>
+                <td class="total-ht">350.00 €</td>
+            </tr>
+            <tr>
+                <td class="title-tva">Total TVA</td>
+                <td class="total-tva">0.00 €</td>
+            </tr>
+            <tr>
+                <td class="title-ttc">Total TTC</td>
+                <td class="total-ttc">350.00 €</td>
+            </tr>
+        </table>
+        <div>
+            <div class="container-montant">
+                <div class="montant-a-payer">Montant à payer</div>
+                <div class="total-amount">350,00€</div>
+            </div>
+        </div>
+</body>
+</html>
