@@ -1,14 +1,28 @@
-import { Body, Controller, Delete, Get, Param, Res } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { InvoiceService } from './invoice.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('invoice')
+@UseGuards(JwtAuthGuard)
 export class InvoiceController {
   constructor(private readonly invoiceService: InvoiceService) {}
 
-  @Get()
-  async getInvoices(@Body() id: string) {
-    return await this.invoiceService.showInvoices(id);
+  @Get(':id')
+  async getInvoices(
+    @Param('id') id: string,
+    @Query('skip') skip: string,
+    @Query('limit') limit: string,
+  ) {
+    return await this.invoiceService.showInvoices(id, skip, limit);
   }
 
   @Delete(':id')
@@ -21,10 +35,8 @@ export class InvoiceController {
     @Param('invoiceNumber') invoiceNumber: string,
     @Res() res: Response,
   ) {
-    const invoiceData = await this.invoiceService.generateInvoiceData(
-      invoiceNumber,
-      100,
-    );
+    const invoiceData =
+      await this.invoiceService.generateInvoice(invoiceNumber);
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader(
@@ -38,11 +50,9 @@ export class InvoiceController {
     @Param('invoiceNumber') invoiceNumber: string,
     @Res() res: Response,
   ): Promise<void> {
-    const pdfBuffer = await this.invoiceService.generateInvoiceData(
-      invoiceNumber,
-      100,
-    );
+    const invoiceData =
+      await this.invoiceService.generateInvoice(invoiceNumber);
     res.setHeader('Content-Type', 'application/pdf');
-    res.send(pdfBuffer);
+    res.send(invoiceData);
   }
 }

@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UpdateUserDto } from '../dto/update-user.dto';
+import { UpdateUserDto } from '../dto/user/update.user.dto';
 import { User } from '../schemas/user.schema';
 import mongoose from 'mongoose';
 import { SignUpDto } from '../dto/signup.dto';

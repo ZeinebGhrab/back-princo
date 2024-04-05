@@ -4,18 +4,324 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facture</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    clear: both;
+  }
+
+img {
+    height: 20px;
+}
+
+body{
+    margin: 35px;
+}
+
+.princo-app {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    color: #000000;
+}
+
+.invoice-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 0px;
+    gap: 4px;
+    font-size: 14px;
+    color: #666371;
+}
+
+.facture-title {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: bold;
+    font-size: 24px;
+    line-height: 28px;
+    display: flex;
+    align-items: center;
+    text-align: right;
+    color: #79c300;
+}
+
+.ref {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 14px;
+    color:#000000
+}
+
+.app-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0px;
+    color: #666371;
+}
+
+.client-section {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  margin-bottom: 45px;
+  background-color: #666371;
+  border-radius: 8px;
+  border: 1px solid #666371;
+  padding : 25px;
+
+}
+
+.facture-a {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 16px;
+    color: #120D26;
+}
+
+.address {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.customer-info {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 16px;
+    text-align: right;
+    color: #120D26;
+    margin-bottom: 2px;
+}
+
+.place-address {
+    width: 170px;
+    height: 42px;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 14px;
+    text-align: right;
+    color: #666371;
+}
+
+.echeance {
+    margin-bottom: 25px;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 500;
+    color: #120D26;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.table1 {
+    width: 100%;
+}
+.table1 td, th {
+    text-align: left;
+    height: 30px;
+}
+
+.table1 th{
+    border-bottom: 1px solid #E3E3E6;
+}
+
+.designation,
+.qte,
+.pu,
+.remise,
+.prix,
+.tva {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    color: #666371;
+}
+
+.amounts {
+    height: 16px;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 16px;
+    color: #000000;
+}
+
+.dates {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 13px;
+    line-height: 16px;
+    color: #120D26;
+    margin-top: 2px;
+}
+
+.table2 {
+    float: right; 
+    margin-top: 60px;
+    margin-bottom: 30px;
+}
+
+.table2 td {
+    width: 30%;
+    height: 30px;
+}
+.table2 td {
+   border-bottom: 1px solid  #E3E3E6;
+}
+
+.total-ht,
+.total-tva,
+.total-ttc {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    text-align: right;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 16px;
+}
+
+.title-ht,
+.title-tva,
+.title-ttc {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    color: #666371;
+}
+
+.container-montant {
+  display: flex;
+  justify-content: space-between;
+  clear: both;
+  background-color: #666371;
+  border-radius: 8px; 
+  border: 1px solid #666371;
+  padding : 25px;
+}
+
+.montant-a-payer {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 16px;
+    color: #120D26;
+}
+
+.total-amount {
+    width: 44px;
+    height: 14px;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 14px;
+    text-align: right;
+    color: #120D26;
+    padding-right: 25px;
+}
+    </style>
 
 </head>
 <body>
-    <div class="facture" >
+    <div>
         <div class="container">
-          <div >
-             <img src="/logo.jpg" class="logo"/>
+            <div class="app-section">
+                <img src="../image/logo.jpg"/>
+                <span class="princo-app"> Princo app.</span>
+                <span>58 rue Ernest Renan, Chelles, ile-de-France</span>
+                <span>(+33)7 35 55 31 15</span>
+                <span>support@princo.com<span>
+            </div>
+          <div class="invoice-section">
+          <span class="facture-title" >Facture</span>
+          <span >Réf: <span class="ref">#<%= ref %></span></span>
+          <span >Date d'émission: <%= paymentDate %></span>
+          <span>Date d'échéance: <%= expirationDate %></</span>
           </div>
-          <div class="vector">
-              llm^^
-          </div>
+        </div>
+       <div>
+         <div class="client-section">
+            <div class="facture-a">Facture à:</div>
+            <div class="invoiceSection">
+                    <div class="customer-info"><%= user.firstName %> <%= user.lastName %> </div>
+                <div class="place-address">
+                <span><%= user.invoiceDetails.adress %>,</span><br/>
+                <span><%= user.invoiceDetails.city %>, <%= user.invoiceDetails.country %></span>
+                <span><%= user.email %> </span>
+                </div>
+
+            </div>
+        </div>
+       </div>
+        <div class="echeance">
+            <%= amount %> € Impressions
+        </div>
+        <table class="table1" >
+            <thead>
+                <tr>
+                <th class="designation">Designation</th>
+                <th class="qte">Qté</th>
+                <th class="pu">P.U.</th>
+                <th class="remise">Remise</th>
+                <th class="prix">Prix</th>
+                <th class="tva">TVA</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="amounts">
+                        <%= offer.title %>
+                    </td>
+                    <td class="amounts">1</td>
+                    <td class="amounts"><%= offer.unitPrice %>€</td>
+                    <td class="amounts"><%= offer.discount %>%</td>
+                    <td class="amounts"><%= offerPriceHT %>€</td>
+                    <td class="amounts"><%= offer.tva %>%</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="dates"><%= paymentDate %> - <%= expirationDate %></div>
+        <table class="table2">
+            <tr>
+                <td class="title-ht">Total HT</td>
+                <td class="total-ht"><%= offer.unitPrice %>€</td>
+            </tr>
+            <tr>
+                <td class="title-tva">Total TVA</td>
+                <td class="total-tva"><%= amountTVA%>€</td>
+            </tr>
+            <tr>
+                <td class="title-ttc">Total TTC</td>
+                <td class="total-ttc"><%= amountTTC %>€</td>
+            </tr>
+        </table>
+        <div>
+            <div class="container-montant">
+                <div class="montant-a-payer">Montant à payer</div>
+                <div class="total-amount"><%= amount %>€</div>
+            </div>
         </div>
 </body>
 </html>
