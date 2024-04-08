@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class PaymentDto {
   @IsString()
@@ -7,4 +7,7 @@ export class PaymentDto {
 
   @IsNotEmpty()
   readonly offerId: string;
+
+  @IsOptional()
+  readonly amount: number;
 }

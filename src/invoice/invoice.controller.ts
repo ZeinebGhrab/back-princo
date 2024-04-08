@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Query,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { InvoiceService } from './invoice.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -25,14 +17,9 @@ export class InvoiceController {
     return await this.invoiceService.showInvoices(id, skip, limit);
   }
 
-  @Delete(':id')
-  async removeInvoice(@Param('id') id: string): Promise<void> {
-    return this.invoiceService.deleteInvoice(id);
-  }
-
-  @Get('download/:invoiceNumber')
+  @Get('download/:id')
   async downloadInvoice(
-    @Param('invoiceNumber') invoiceNumber: string,
+    @Param('id') invoiceNumber: string,
     @Res() res: Response,
   ) {
     const invoiceData =

@@ -1,10 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { Offer } from './offer.schema';
-import { User } from './user.schema';
+import { User } from './user.schema/user.schema';
 
 @Schema()
 export class Payment {
+  @Prop()
+  readonly amount: number;
+
   @Prop({ type: Date, default: () => new Date() })
   readonly paymentDate: Date;
 

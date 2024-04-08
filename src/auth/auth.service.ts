@@ -3,7 +3,7 @@ import { Model } from 'mongoose';
 
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from 'src/dto/login.dto';
-import { User } from 'src/schemas/user.schema';
+import { User } from 'src/schemas/user.schema/user.schema';
 import { comparePassword } from 'src/utils/bcrypt';
 
 @Injectable()

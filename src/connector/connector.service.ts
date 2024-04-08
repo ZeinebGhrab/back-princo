@@ -1,6 +1,6 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
-import { User } from '../schemas/user.schema';
+import { User } from '../schemas/user.schema/user.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { Connector } from 'src/schemas/connector.schema';
 import { ConnectorDto } from 'src/dto/connector.dto';

@@ -7,7 +7,7 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { User } from '../schemas/user.schema';
+import { User } from '../schemas/user.schema/user.schema';
 import * as nodemailer from 'nodemailer';
 import { Model } from 'mongoose';
 import { UpdateUserDto } from '../dto/user/update.user.dto';
@@ -144,7 +144,7 @@ export class UserService {
       html: `
       <p>Bonjour,</p>
       <p>Veuillez cliquer sur le lien suivant pour vérifier votre adresse e-mail :</p>
-      <p><a href="http://localhost:5173/verify?token=${token}">Vérifier l'e-mail</a></p>
+      <p><a href="${process.env.url}/verify?token=${token}">Vérifier l'e-mail</a></p>
       <p>Si vous n'avez pas fait cette demande, veuillez ignorer cet e-mail.</p>
       `,
     };
@@ -170,7 +170,7 @@ export class UserService {
     if (!user) {
       throw new HttpException('Utilisateur non trouvé', HttpStatus.NOT_FOUND);
     }
-    const resetLink = `http://localhost:5173/verify?email=${email}`;
+    const resetLink = `${process.env.url}/verify?email=${email}`;
     const mailOptions = {
       from: `Princo <princo@gmail.com>`,
       to: email,

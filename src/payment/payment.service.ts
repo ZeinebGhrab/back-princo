@@ -4,7 +4,7 @@ import { PaymentDto } from 'src/dto/payment.dto';
 import { InvoiceService } from 'src/invoice/invoice.service';
 import { Offer } from 'src/schemas/offer.schema';
 import { Payment } from 'src/schemas/payment.schema';
-import { User } from 'src/schemas/user.schema';
+import { User } from 'src/schemas/user.schema/user.schema';
 import { UserService } from 'src/user/user.service';
 import Stripe from 'stripe';
 
@@ -55,8 +55,8 @@ export class PaymentService {
         payment_method_types: ['card'],
         mode: 'payment',
         line_items,
-        success_url: 'http://localhost:5173/successfulPayment',
-        cancel_url: 'http://localhost:5173/failedPayment',
+        success_url: `${process.env.URL}/successfulPayment`,
+        cancel_url: `${process.env.URL}/failedPayment`,
         metadata: {
           userId: payment.userId,
           offerId: payment.offerId,
@@ -77,6 +77,7 @@ export class PaymentService {
       await this.paymentModel.create({
         user: payment.userId,
         offer: payment.offerId,
+        amount: payment.amount,
       });
     } catch (error) {
       throw error(`erreur d'ajout de paiement ${error}`);
@@ -103,6 +104,7 @@ export class PaymentService {
         await this.createPayment({
           userId: metadata.userId,
           offerId: metadata.offerId,
+          amount: metadata.totalPrice,
         });
 
         await this.userService.updateTicketsUser({

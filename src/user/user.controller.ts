@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from '../dto/user/update.user.dto';
-import { User } from '../schemas/user.schema';
+import { User } from '../schemas/user.schema/user.schema';
 import mongoose from 'mongoose';
 import { SignUpDto } from '../dto/signup.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';

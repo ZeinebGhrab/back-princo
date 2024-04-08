@@ -47,15 +47,6 @@ export class InvoiceService {
     await this.invoiceModel.create({ ...invoice, expirationDate, ref });
   }
 
-  async deleteInvoice(id: string): Promise<void> {
-    const removeInvoice = await this.invoiceModel
-      .findByIdAndDelete({ id })
-      .exec();
-    if (!removeInvoice) {
-      throw new ConflictException("La facture n'existe pas");
-    }
-  }
-
   async generateInvoice(id: string): Promise<Buffer> {
     const templatePath = 'C:/Users/a/Desktop/backend/views/invoice.ejs';
     const template = fs.readFileSync(templatePath, 'utf8');
