@@ -6,10 +6,13 @@ import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.enableCors();
+  app.enableCors({
+    origin: '*',
+    credentials: true,
+  });
   app.useGlobalPipes(new ValidationPipe());
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
-  app.setViewEngine('hbs');
+  app.setViewEngine('ejs');
   await app.listen(3000);
 }
 bootstrap();

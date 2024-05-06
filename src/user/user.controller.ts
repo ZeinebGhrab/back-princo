@@ -6,24 +6,26 @@ import {
   Param,
   Body,
   HttpException,
-  Logger,
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UpdateUserDto } from '../dto/user/update.user.dto';
-import { User } from '../schemas/user.schema/user.schema';
 import mongoose from 'mongoose';
-import { SignUpDto } from '../dto/signup.dto';
+import { SignUpDto } from './dto/signup.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Roles } from 'src/role/roles.decorator';
+import { Role } from 'src/role/enums/role.enum';
+import { User } from './schemas/user.schema';
+import { UpdateUserDto } from './dto/update.user.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Controller('users')
 export class UserController {
-  private logger = new Logger('UserService');
   private readonly transporter;
   constructor(private readonly userService: UserService) {}
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
+  @Roles(Role.User)
   async getUserById(@Param('id') id: string): Promise<User> {
     const isValid = mongoose.Types.ObjectId.isValid(id);
     if (!isValid) throw new HttpException('User not found', 404);
@@ -34,6 +36,7 @@ export class UserController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard)
+  @Roles(Role.User)
   async updateUser(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -50,9 +53,13 @@ export class UserController {
     return updateUser;
   }
 
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async updateExpiredTicketsToZero() {
+    await this.userService.updateExpiredTicketsToZero();
+  }
+
   @Post('/signup')
   signUp(@Body() signUpDto: SignUpDto): Promise<{ message: string }> {
-    this.logger.log('Signup request', JSON.stringify(signUpDto));
     return this.userService.signUp(signUpDto);
   }
 
@@ -74,5 +81,9 @@ export class UserController {
     @Body('password') password: string,
   ): Promise<{ token: string; id: string }> {
     return this.userService.resetPassword(email, password);
+  }
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async updateResetPasswordToFalse() {
+    await this.userService.updateEmailResetPassword();
   }
 }

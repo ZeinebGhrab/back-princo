@@ -9,7 +9,7 @@ export class SignUpDto {
   readonly lastName: string;
 
   @IsNotEmpty()
-  @IsEmail({}, { message: 'Please enter correct email' })
+  @IsEmail()
   readonly email: string;
 
   @IsNotEmpty()

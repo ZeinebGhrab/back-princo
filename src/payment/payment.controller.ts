@@ -4,26 +4,21 @@ import {
   Body,
   HttpCode,
   HttpStatus,
-  Inject,
   UseGuards,
 } from '@nestjs/common';
 import { PaymentService } from './payment.service';
-import { PaymentDto } from 'src/dto/payment.dto';
-import Stripe from 'stripe';
+import { PaymentDto } from 'src/payment/dto/payment.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Roles } from 'src/role/roles.decorator';
+import { Role } from 'src/role/enums/role.enum';
 
 @Controller('payment')
 export class PaymentController {
-  private stripe: Stripe;
-  constructor(
-    private readonly paymentService: PaymentService,
-    @Inject('PAYMENT_MODEL') stripeClient: Stripe,
-  ) {
-    this.stripe = stripeClient;
-  }
+  constructor(private readonly paymentService: PaymentService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
+  @Roles(Role.User)
   async payment(@Body() paymentDto: PaymentDto) {
     try {
       return await this.paymentService.processPayment(paymentDto);

@@ -9,6 +9,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { InvoiceModule } from './invoice/invoice.module';
 import { OfferModule } from './offer/offer.module';
 import { PaymentModule } from './payment/payment.module';
+import { ImpressionModule } from './impression/impression.module';
+import { NotificationModule } from './notification/notification.module';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './role/role.guard';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -16,6 +21,7 @@ import { PaymentModule } from './payment/payment.module';
       envFilePath: '.env',
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     AuthModule,
     UserModule,
@@ -23,11 +29,19 @@ import { PaymentModule } from './payment/payment.module';
     InvoiceModule,
     OfferModule,
     PaymentModule,
+    ImpressionModule,
+    NotificationModule,
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '60s' },
     }),
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
   ],
 })
 export class AppModule {}

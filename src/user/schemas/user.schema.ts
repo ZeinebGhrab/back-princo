@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { InvoiceDetails } from './invoice.details.schema';
+import { Role } from 'src/role/enums/role.enum';
 
 @Schema({ timestamps: true })
 export class User extends Document {
@@ -10,7 +11,7 @@ export class User extends Document {
   @Prop({ required: true })
   readonly lastName: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   readonly email: string;
 
   @Prop({ required: true })
@@ -44,10 +45,13 @@ export class User extends Document {
   readonly invoiceDetails: InvoiceDetails;
 
   @Prop({ default: 0 })
-  readonly tickets: number;
+  tickets: number;
 
   @Prop({ type: Date, default: () => new Date() })
   readonly ticketsExpirationDate: Date;
+
+  @Prop({ default: Role.User })
+  readonly roles: Role[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

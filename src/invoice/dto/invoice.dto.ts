@@ -8,11 +8,8 @@ export class InvoiceDto {
   readonly validity: number;
 
   @IsString()
-  readonly offer: string;
+  readonly offerId: string;
 
   @IsString()
   readonly user: string;
-
-  @IsString()
-  readonly premiumPack: string;
 }

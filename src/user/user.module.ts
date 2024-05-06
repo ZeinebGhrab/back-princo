@@ -5,6 +5,7 @@ import { Module } from '@nestjs/common';
 import { userProviders } from './user.providers';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -15,6 +16,7 @@ import { ConfigModule } from '@nestjs/config';
     JwtModule.register({
       secret: process.env.JWT_SECRET,
     }),
+    ScheduleModule.forRoot(),
   ],
   providers: [UserService, ...userProviders],
   controllers: [UserController],

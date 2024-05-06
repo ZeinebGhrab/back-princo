@@ -8,4 +8,7 @@ export class LoginDto {
   @IsNotEmpty()
   @IsString()
   readonly password: string;
+
+  @IsNotEmpty()
+  readonly rememberMe: boolean;
 }

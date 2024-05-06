@@ -2,16 +2,18 @@ import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as ejs from 'ejs';
 import puppeteer from 'puppeteer';
-import { Invoice } from 'src/schemas/invoice.schema';
+import { Invoice } from 'src/invoice/schemas/invoice.schema';
 import { Model } from 'mongoose';
-import { InvoiceDto } from 'src/dto/invoice.dto';
+import { InvoiceDto } from 'src/invoice/dto/invoice.dto';
 import * as moment from 'moment';
 import 'moment/locale/fr';
+import { Offer } from 'src/offer/schemas/offer.schema';
 
 @Injectable()
 export class InvoiceService {
   constructor(
     @Inject('INVOICE_MODEL') private readonly invoiceModel: Model<Invoice>,
+    @Inject('OFFER_MODEL') private readonly offerModel: Model<Offer>,
   ) {}
 
   async showInvoices(
@@ -44,17 +46,22 @@ export class InvoiceService {
       .slice(-2);
     const ref = `${numberOfInvoices + 1}/${currentYearLastTwoDigits}`;
 
-    await this.invoiceModel.create({ ...invoice, expirationDate, ref });
+    const offer = await this.offerModel.findById(invoice.offerId);
+
+    await this.invoiceModel.create({
+      ...invoice,
+      offer,
+      premiumPack: offer.title,
+      expirationDate,
+      ref,
+    });
   }
 
   async generateInvoice(id: string): Promise<Buffer> {
     const templatePath = 'C:/Users/a/Desktop/backend/views/invoice.ejs';
     const template = fs.readFileSync(templatePath, 'utf8');
     const compiledTemplate = ejs.compile(template);
-    const invoice = await this.invoiceModel
-      .findById(id)
-      .populate('user')
-      .populate('offer');
+    const invoice = await this.invoiceModel.findById(id).populate('user');
 
     const invoiceData = {
       ref: invoice.ref,

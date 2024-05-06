@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
-import { PaymentDto } from 'src/dto/payment.dto';
+import { PaymentDto } from 'src/payment/dto/payment.dto';
 import { InvoiceService } from 'src/invoice/invoice.service';
-import { Offer } from 'src/schemas/offer.schema';
-import { Payment } from 'src/schemas/payment.schema';
-import { User } from 'src/schemas/user.schema/user.schema';
+import { Offer } from 'src/offer/schemas/offer.schema';
+import { Payment } from 'src/payment/schemas/payment.schema';
+import { User } from 'src/user/schemas/user.schema';
 import { UserService } from 'src/user/user.service';
 import Stripe from 'stripe';
 
@@ -60,7 +60,6 @@ export class PaymentService {
         metadata: {
           userId: payment.userId,
           offerId: payment.offerId,
-          premiumPack: offer.title,
           totalPrice: totalPrice,
           tickets: offer.ticketsNumber,
           validity: offer.validityPeriod,
@@ -115,10 +114,9 @@ export class PaymentService {
 
         await this.invoiceService.createInvoice({
           user: metadata.userId,
-          offer: metadata.offerId,
+          offerId: metadata.offerId,
           amount: metadata.totalPrice,
           validity: metadata.validity,
-          premiumPack: metadata.premiumPack,
         });
       }
       return { received: true };

@@ -2,9 +2,12 @@ import { Controller, Get, Param, Query, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { InvoiceService } from './invoice.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Roles } from 'src/role/roles.decorator';
+import { Role } from 'src/role/enums/role.enum';
 
 @Controller('invoice')
 @UseGuards(JwtAuthGuard)
+@Roles(Role.User)
 export class InvoiceController {
   constructor(private readonly invoiceService: InvoiceService) {}
 

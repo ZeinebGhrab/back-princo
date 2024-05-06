@@ -1,23 +1,15 @@
-import { User } from './user.schema/user.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { Offer } from './offer.schema';
+import { Offer } from 'src/offer/schemas/offer.schema';
+import { User } from 'src/user/schemas/user.schema';
+
 @Schema()
-export class Invoice {
-  @Prop()
-  readonly ref: string;
-
-  @Prop()
-  readonly premiumPack: string;
-
+export class Payment {
   @Prop()
   readonly amount: number;
 
   @Prop({ type: Date, default: () => new Date() })
-  readonly paymentDate: string;
-
-  @Prop()
-  readonly expirationDate: Date;
+  readonly paymentDate: Date;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Offer' })
   readonly offer: Offer;
@@ -26,4 +18,4 @@ export class Invoice {
   readonly user: User;
 }
 
-export const InvoiceSchema = SchemaFactory.createForClass(Invoice);
+export const PaymentSchema = SchemaFactory.createForClass(Payment);

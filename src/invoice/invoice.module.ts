@@ -5,6 +5,7 @@ import { invoiceProviders } from './invoice.provider';
 import { DatabaseModule } from 'src/database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { offerProviders } from 'src/offer/offer.provider';
 
 @Module({
   imports: [
@@ -19,6 +20,6 @@ import { JwtModule } from '@nestjs/jwt';
     }),
   ],
   controllers: [InvoiceController],
-  providers: [InvoiceService, ...invoiceProviders],
+  providers: [InvoiceService, ...invoiceProviders, ...offerProviders],
 })
 export class InvoiceModule {}

@@ -1,4 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { User } from 'src/user/schemas/user.schema';
+import mongoose from 'mongoose';
 @Schema()
 export class Offer {
   @Prop()
@@ -21,6 +23,9 @@ export class Offer {
 
   @Prop()
   unitPrice: number;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  readonly admin: User;
 }
 
 export const OfferSchema = SchemaFactory.createForClass(Offer);

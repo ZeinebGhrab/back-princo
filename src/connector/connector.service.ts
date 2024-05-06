@@ -1,10 +1,16 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { Model, Types } from 'mongoose';
-import { User } from '../schemas/user.schema/user.schema';
 import { v4 as uuidv4 } from 'uuid';
-import { Connector } from 'src/schemas/connector.schema';
-import { ConnectorDto } from 'src/dto/connector.dto';
-
+import { Connector } from './schemas/connector.schema';
+import { User } from 'src/user/schemas/user.schema';
+import { ConnectorDto } from './dto/connector.dto';
+import { PrinterDto } from './dto/printer.dto';
 @Injectable()
 export class ConnectorService {
   constructor(
@@ -46,10 +52,27 @@ export class ConnectorService {
     return connectors;
   }
 
+  async getConnectorsWithPrinters(
+    id: string,
+    skip: string,
+    limit: string,
+  ): Promise<{ connectors: Connector[]; count: number }> {
+    const connectors = await this.connectorModel
+      .find({ user: id, printerName: { $ne: '' } })
+      .skip(parseInt(skip))
+      .limit(parseInt(limit))
+      .exec();
+    const count = await this.connectorModel.countDocuments({ user: id });
+    return { connectors, count };
+  }
+
   async findById(id: string): Promise<Connector> {
     const connectorId = await this.connectorModel.findById(id);
     if (!connectorId) {
-      throw new ConflictException("Le Connecteur n'existe pas");
+      throw new HttpException(
+        "Le Connecteur n'existe pas",
+        HttpStatus.NOT_FOUND,
+      );
     }
     return this.connectorModel.findById(id).exec();
   }
@@ -68,14 +91,57 @@ export class ConnectorService {
       .exec();
   }
 
+  async setActive(id: string, active: { isActive: boolean }): Promise<void> {
+    const connectorId = await this.connectorModel.findById(id);
+    if (!connectorId) {
+      throw new HttpException(
+        "Le Connecteur n'existe pas",
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    await this.connectorModel
+      .findByIdAndUpdate(id, active, { new: true })
+      .exec();
+  }
+
+  async addPrinter(id: string, updateConnector: PrinterDto): Promise<void> {
+    const { apiKey, printerName } = updateConnector;
+    const checkConnector = await this.connectorModel.findOne({
+      apiKey,
+      user: id,
+    });
+    if (!checkConnector) {
+      throw new HttpException(
+        "Le connecteur associé à cette clé API n'existe pas.",
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    if (!checkConnector.isActive) {
+      throw new HttpException(
+        "Vous devez d'abord activer le connecteur.",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.connectorModel
+      .findOneAndUpdate(
+        { user: id, apiKey: apiKey },
+        { printerName },
+        {
+          new: true,
+        },
+      )
+      .exec();
+  }
+
   async remove(id: string): Promise<void> {
     const connector = await this.connectorModel.findByIdAndDelete(id);
     if (!connector) {
-      throw new ConflictException("Le connecteur n'existe pas");
+      throw new HttpException(
+        "Le connecteur n'existe pas",
+        HttpStatus.NOT_FOUND,
+      );
     }
-    await this.userModel.updateMany(
-      { connectors: connector._id },
-      { $pull: { connectors: connector._id } },
-    );
   }
 }

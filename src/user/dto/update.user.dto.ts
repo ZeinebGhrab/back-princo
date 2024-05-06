@@ -1,5 +1,5 @@
-import { InvoiceDetailsDto } from 'src/dto/user/invoiceDetails.dto';
 import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { InvoiceDetailsDto } from './invoiceDetails.dto';
 
 export class UpdateUserDto {
   @IsString()

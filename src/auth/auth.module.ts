@@ -8,6 +8,8 @@ import { UserModule } from 'src/user/user.module';
 import { DatabaseModule } from 'src/database/database.module';
 import { AuthController } from './auth.controller';
 import { ConfigModule } from '@nestjs/config';
+import { RolesGuard } from 'src/role/role.guard';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -22,7 +24,15 @@ import { ConfigModule } from '@nestjs/config';
       secret: process.env.JWT_SECRET,
     }),
   ],
-  providers: [AuthService, JwtStrategy, ...userProviders],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    ...userProviders,
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
   exports: [AuthService],
   controllers: [AuthController],
 })

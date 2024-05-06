@@ -1,5 +1,5 @@
 import { Connection } from 'mongoose';
-import { InvoiceSchema } from 'src/schemas/invoice.schema';
+import { InvoiceSchema } from 'src/invoice/schemas/invoice.schema';
 
 export const invoiceProviders = [
   {

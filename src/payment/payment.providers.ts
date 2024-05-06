@@ -1,5 +1,5 @@
 import { Connection } from 'mongoose';
-import { PaymentSchema } from 'src/schemas/payment.schema';
+import { PaymentSchema } from 'src/payment/schemas/payment.schema';
 import Stripe from 'stripe';
 
 export const stripeProviders = [

@@ -1,5 +1,5 @@
 import { Connection } from 'mongoose';
-import { ConnectorSchema } from 'src/schemas/connector.schema';
+import { ConnectorSchema } from './schemas/connector.schema';
 
 export const connectorProviders = [
   {

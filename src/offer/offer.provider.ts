@@ -1,5 +1,5 @@
 import { Connection } from 'mongoose';
-import { OfferSchema } from 'src/schemas/offer.schema';
+import { OfferSchema } from 'src/offer/schemas/offer.schema';
 
 export const offerProviders = [
   {
