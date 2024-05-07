@@ -63,6 +63,11 @@ export class UserController {
     return this.userService.signUp(signUpDto);
   }
 
+  @Cron('0 0 1 * *')
+  async deleteUserNotConfirm() {
+    await this.userService.deleteUserNotConfirm();
+  }
+
   @Post('/verify')
   async verifyEmail(
     @Body('token') token: string,

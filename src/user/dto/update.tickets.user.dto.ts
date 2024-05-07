@@ -9,5 +9,5 @@ export class UpdateTickets {
   tickets: string;
 
   @IsNotEmpty()
-  validityPeriod: number;
+  expirationDate: string;
 }

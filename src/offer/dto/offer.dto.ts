@@ -1,9 +1,4 @@
-import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
-
-function transformToNumber(value: any): number {
-  return Number(value);
-}
 
 export class OfferDto {
   @IsNotEmpty()
@@ -15,23 +10,18 @@ export class OfferDto {
   readonly description: string;
 
   @IsNotEmpty()
-  @Transform(transformToNumber)
   readonly ticketsNumber: number;
 
   @IsNotEmpty()
-  @Transform(transformToNumber)
-  readonly validityPeriod: number;
+  readonly expirationDate: Date;
 
   @IsNotEmpty()
-  @Transform(transformToNumber)
   readonly tva: number;
 
   @IsNotEmpty()
-  @Transform(transformToNumber)
   readonly discount: number;
 
   @IsNotEmpty()
-  @Transform(transformToNumber)
   readonly unitPrice: number;
 
   @IsNotEmpty()

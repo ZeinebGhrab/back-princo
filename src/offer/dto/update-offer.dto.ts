@@ -11,8 +11,8 @@ export class UpdateOfferDto {
   @IsNumber()
   readonly ticketsNumber: number;
 
-  @IsNumber()
-  readonly validityPeriod: number;
+  @IsNotEmpty()
+  readonly expirationDate: Date;
 
   @IsNumber()
   readonly tva: number;

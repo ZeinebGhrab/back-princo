@@ -13,16 +13,16 @@ export class Offer {
   readonly ticketsNumber: number;
 
   @Prop()
-  readonly validityPeriod: number;
+  readonly expirationDate: Date;
 
   @Prop()
-  tva: number;
+  readonly tva: number;
 
   @Prop()
-  discount: number;
+  readonly discount: number;
 
   @Prop()
-  unitPrice: number;
+  readonly unitPrice: number;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   readonly admin: User;

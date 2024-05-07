@@ -76,15 +76,14 @@ export class UserService {
       }
 
       let expirationDate: Date;
-      if (user.tickets === 0) {
-        expirationDate = new Date(
-          Date.now() + updateUser.validityPeriod * 24 * 60 * 60 * 1000,
-        );
+
+      if (
+        user.tickets === 0 ||
+        user.ticketsExpirationDate < new Date(updateUser.expirationDate)
+      ) {
+        expirationDate = new Date(updateUser.expirationDate);
       } else {
-        expirationDate = new Date(
-          user.ticketsExpirationDate.getTime() +
-            updateUser.validityPeriod * 24 * 60 * 60 * 1000,
-        );
+        expirationDate = user.ticketsExpirationDate;
       }
 
       const updatedFields = {
@@ -97,8 +96,10 @@ export class UserService {
         updatedFields,
         { new: true },
       );
+
       return updatedUser;
     } catch (error) {
+      console.log(error);
       throw new Error(
         "Erreur lors de la mise à jour des tickets de l'utilisateur",
       );
@@ -207,5 +208,12 @@ export class UserService {
       .updateMany({ resetPassword: true }, { $set: { resetPassword: false } })
       .exec();
     return updateEmail;
+  }
+
+  async deleteUserNotConfirm() {
+    await this.userModel.deleteMany({
+      emailVerified: false,
+      emailVerificationToken: { $ne: '' },
+    });
   }
 }

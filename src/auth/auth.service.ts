@@ -49,7 +49,11 @@ export class AuthService {
   }> {
     const { email, password, rememberMe } = loginDto;
 
-    const user = await this.userModel.findOne({ email });
+    const user = await this.userModel.findOne({
+      email,
+      emailVerified: true,
+      emailVerificationToken: '',
+    });
     if (!user) {
       throw new UnauthorizedException("L'email invalide");
     }

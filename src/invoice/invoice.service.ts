@@ -33,10 +33,7 @@ export class InvoiceService {
   }
 
   async createInvoice(invoice: InvoiceDto): Promise<void> {
-    const today = new Date();
-    const expirationDate = new Date(
-      today.getTime() + invoice.validity * 24 * 60 * 60 * 1000,
-    );
+    const expirationDate = new Date(invoice.validity);
     const numberOfInvoices = await this.invoiceModel
       .find({ user: invoice.user })
       .countDocuments();
