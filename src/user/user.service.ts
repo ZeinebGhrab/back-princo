@@ -13,7 +13,6 @@ import { JwtService } from '@nestjs/jwt';
 import { encodePassword } from 'src/utils/bcrypt';
 import { User } from './schemas/user.schema';
 import { UpdateUserDto } from './dto/update.user.dto';
-import { InvoiceDetailsDto } from './dto/invoiceDetails.dto';
 import { UpdateTickets } from './dto/update.tickets.user.dto';
 
 @Injectable()
@@ -38,12 +37,7 @@ export class UserService {
   async getUserById(id: string): Promise<User> {
     return this.userModel.findById(id).exec();
   }
-  async updateUser(
-    id: string,
-    updateUserDto: UpdateUserDto,
-    password?: string,
-    invoiceDetails?: InvoiceDetailsDto,
-  ): Promise<User> {
+  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const existingUser = await this.userModel.findById(id);
     if (!existingUser) {
       throw new ConflictException('Utilisateur non trouvé');
@@ -51,13 +45,13 @@ export class UserService {
 
     const updatedFields: any = { ...updateUserDto };
 
-    if (password) {
-      const hashedPassword = encodePassword(password);
+    if (updateUserDto.password) {
+      const hashedPassword = encodePassword(updateUserDto.password);
       updatedFields.password = hashedPassword;
     }
 
-    if (invoiceDetails) {
-      updatedFields.invoiceDetails = invoiceDetails;
+    if (updateUserDto.invoiceDetails) {
+      updatedFields.invoiceDetails = updateUserDto.invoiceDetails;
     }
 
     const updatedUser = await this.userModel.findByIdAndUpdate(
@@ -76,14 +70,13 @@ export class UserService {
       }
 
       let expirationDate: Date;
-
-      if (
-        user.tickets === 0 ||
-        user.ticketsExpirationDate < new Date(updateUser.expirationDate)
-      ) {
+      if (user.tickets === 0) {
         expirationDate = new Date(updateUser.expirationDate);
       } else {
-        expirationDate = user.ticketsExpirationDate;
+        expirationDate =
+          user.ticketsExpirationDate > new Date(updateUser.expirationDate)
+            ? user.ticketsExpirationDate
+            : new Date(updateUser.expirationDate);
       }
 
       const updatedFields = {
@@ -96,10 +89,8 @@ export class UserService {
         updatedFields,
         { new: true },
       );
-
       return updatedUser;
     } catch (error) {
-      console.log(error);
       throw new Error(
         "Erreur lors de la mise à jour des tickets de l'utilisateur",
       );
@@ -210,10 +201,9 @@ export class UserService {
     return updateEmail;
   }
 
-  async deleteUserNotConfirm() {
-    await this.userModel.deleteMany({
-      emailVerified: false,
-      emailVerificationToken: { $ne: '' },
-    });
+  async deleteUserNotConfirmEmail() {
+    await this.userModel
+      .deleteMany({ emailVerified: true, emailVerificationToken: { $ne: '' } })
+      .exec();
   }
 }

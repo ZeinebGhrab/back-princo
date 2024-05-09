@@ -14,6 +14,7 @@ import { NotificationModule } from './notification/notification.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './role/role.guard';
 import { ScheduleModule } from '@nestjs/schedule';
+import { PendingFilesModule } from './pending-files/pending-files.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     PaymentModule,
     ImpressionModule,
     NotificationModule,
+    PendingFilesModule,
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,

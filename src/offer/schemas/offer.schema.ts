@@ -16,13 +16,13 @@ export class Offer {
   readonly expirationDate: Date;
 
   @Prop()
-  readonly tva: number;
+  tva: number;
 
   @Prop()
-  readonly discount: number;
+  discount: number;
 
   @Prop()
-  readonly unitPrice: number;
+  unitPrice: number;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   readonly admin: User;

@@ -20,7 +20,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Controller('users')
 export class UserController {
-  private readonly transporter;
   constructor(private readonly userService: UserService) {}
 
   @Get(':id')
@@ -63,11 +62,6 @@ export class UserController {
     return this.userService.signUp(signUpDto);
   }
 
-  @Cron('0 0 1 * *')
-  async deleteUserNotConfirm() {
-    await this.userService.deleteUserNotConfirm();
-  }
-
   @Post('/verify')
   async verifyEmail(
     @Body('token') token: string,
@@ -90,5 +84,10 @@ export class UserController {
   @Cron(CronExpression.EVERY_10_MINUTES)
   async updateResetPasswordToFalse() {
     await this.userService.updateEmailResetPassword();
+  }
+
+  @Cron('0 0 1 * *')
+  async deleteUserNotConfirmEmail() {
+    await this.userService.deleteUserNotConfirmEmail();
   }
 }

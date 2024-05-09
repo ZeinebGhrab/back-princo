@@ -19,23 +19,19 @@ export class AuthService {
     email: string,
     password: string,
   ): void {
-    res.cookie('rememberedEmail', email, {
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      sameSite: 'none',
-      secure: true,
-    });
-    res.cookie('rememberedPassword', password, {
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      sameSite: 'none',
-      secure: true,
-    });
-    res.cookie('rememberMe', 'true', {
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      sameSite: 'none',
-      secure: true,
+    const cookies = [
+      { name: 'rememberedEmail', value: email },
+      { name: 'rememberedPassword', value: password },
+      { name: 'rememberMe', value: 'true' },
+    ];
+
+    cookies.forEach((cookie) => {
+      res.cookie(cookie.name, cookie.value, {
+        httpOnly: true,
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        sameSite: 'none',
+        secure: true,
+      });
     });
   }
 
@@ -49,7 +45,7 @@ export class AuthService {
   }> {
     const { email, password, rememberMe } = loginDto;
 
-    const user = await this.userModel.findOne({
+    const user = await this.userModel.findOneAndUpdate({
       email,
       emailVerified: true,
       emailVerificationToken: '',

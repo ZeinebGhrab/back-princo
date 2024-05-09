@@ -1,4 +1,9 @@
+import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
+
+function transformToNumber(value: any): number {
+  return Number(value);
+}
 
 export class OfferDto {
   @IsNotEmpty()
@@ -10,6 +15,7 @@ export class OfferDto {
   readonly description: string;
 
   @IsNotEmpty()
+  @Transform(transformToNumber)
   readonly ticketsNumber: number;
 
   @IsNotEmpty()

@@ -7,7 +7,6 @@ import { Payment } from 'src/payment/schemas/payment.schema';
 import { User } from 'src/user/schemas/user.schema';
 import { UserService } from 'src/user/user.service';
 import Stripe from 'stripe';
-import * as moment from 'moment';
 
 @Injectable()
 export class PaymentService {
@@ -63,9 +62,7 @@ export class PaymentService {
           offerId: payment.offerId,
           totalPrice: totalPrice,
           tickets: offer.ticketsNumber,
-          validity: offer.expirationDate
-            ? moment(offer.expirationDate).format('YYYY-MM-DD')
-            : '',
+          expirationDate: offer.expirationDate.toISOString(),
         },
       });
       return session;
@@ -111,7 +108,7 @@ export class PaymentService {
 
         await this.userService.updateTicketsUser({
           userId: metadata.userId,
-          expirationDate: metadata.validity,
+          expirationDate: metadata.expirationDate,
           tickets: metadata.tickets,
         });
 
@@ -119,7 +116,7 @@ export class PaymentService {
           user: metadata.userId,
           offerId: metadata.offerId,
           amount: metadata.totalPrice,
-          validity: metadata.validity,
+          expirationDate: metadata.expirationDate,
         });
       }
       return { received: true };

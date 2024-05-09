@@ -9,6 +9,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { notificationProviders } from 'src/notification/notification.provider';
 import { NotificationService } from 'src/notification/notification.service';
+import { pendingFilesProviders } from 'src/pending-files/pendilg-files.provider';
+import { PendingFilesService } from 'src/pending-files/pending-files.service';
 
 @Module({
   imports: [
@@ -26,9 +28,11 @@ import { NotificationService } from 'src/notification/notification.service';
     ImpressionService,
     ImpressionNotificationGateway,
     NotificationService,
+    PendingFilesService,
     ...connectorProviders,
     ...userProviders,
     ...notificationProviders,
+    ...pendingFilesProviders,
   ],
 })
 export class ImpressionModule {}

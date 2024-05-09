@@ -5,7 +5,7 @@ export class InvoiceDto {
   readonly amount: number;
 
   @IsNotEmpty()
-  readonly validity: string;
+  readonly expirationDate: Date;
 
   @IsString()
   readonly offerId: string;

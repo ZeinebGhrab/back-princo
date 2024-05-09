@@ -33,7 +33,6 @@ export class InvoiceService {
   }
 
   async createInvoice(invoice: InvoiceDto): Promise<void> {
-    const expirationDate = new Date(invoice.validity);
     const numberOfInvoices = await this.invoiceModel
       .find({ user: invoice.user })
       .countDocuments();
@@ -49,7 +48,6 @@ export class InvoiceService {
       ...invoice,
       offer,
       premiumPack: offer.title,
-      expirationDate,
       ref,
     });
   }
