@@ -19,19 +19,15 @@ export class OfferDto {
   readonly ticketsNumber: number;
 
   @IsNotEmpty()
-  @Transform(transformToNumber)
-  readonly validityPeriod: number;
+  readonly expirationDate: Date;
 
   @IsNotEmpty()
-  @Transform(transformToNumber)
   readonly tva: number;
 
   @IsNotEmpty()
-  @Transform(transformToNumber)
   readonly discount: number;
 
   @IsNotEmpty()
-  @Transform(transformToNumber)
   readonly unitPrice: number;
 
   @IsNotEmpty()

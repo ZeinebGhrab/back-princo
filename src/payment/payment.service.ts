@@ -62,7 +62,7 @@ export class PaymentService {
           offerId: payment.offerId,
           totalPrice: totalPrice,
           tickets: offer.ticketsNumber,
-          validity: offer.validityPeriod,
+          expirationDate: offer.expirationDate.toISOString(),
         },
       });
       return session;
@@ -108,7 +108,7 @@ export class PaymentService {
 
         await this.userService.updateTicketsUser({
           userId: metadata.userId,
-          validityPeriod: metadata.validity,
+          expirationDate: metadata.expirationDate,
           tickets: metadata.tickets,
         });
 
@@ -116,7 +116,7 @@ export class PaymentService {
           user: metadata.userId,
           offerId: metadata.offerId,
           amount: metadata.totalPrice,
-          validity: metadata.validity,
+          expirationDate: metadata.expirationDate,
         });
       }
       return { received: true };

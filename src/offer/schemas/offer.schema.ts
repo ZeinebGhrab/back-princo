@@ -13,7 +13,7 @@ export class Offer {
   readonly ticketsNumber: number;
 
   @Prop()
-  readonly validityPeriod: number;
+  readonly expirationDate: Date;
 
   @Prop()
   tva: number;
