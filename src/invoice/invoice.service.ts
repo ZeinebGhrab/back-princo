@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as ejs from 'ejs';
 import puppeteer from 'puppeteer';
@@ -26,9 +26,6 @@ export class InvoiceService {
       .skip(parseInt(skip))
       .limit(parseInt(limit))
       .exec();
-    if (!invoices) {
-      throw new ConflictException("L'utilisateur n'a pas encore des factures");
-    }
     return invoices;
   }
 

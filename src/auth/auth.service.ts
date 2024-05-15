@@ -45,18 +45,20 @@ export class AuthService {
   }> {
     const { email, password, rememberMe } = loginDto;
 
-    const user = await this.userModel.findOneAndUpdate({
+    const user = await this.userModel.findOne({
       email,
       emailVerified: true,
       emailVerificationToken: '',
     });
     if (!user) {
-      throw new UnauthorizedException("L'email invalide");
+      throw new UnauthorizedException(
+        'Pas de compte associé à cette adresse e-mail.',
+      );
     }
 
     const isPasswordValid = comparePassword(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Le mot de passe invalide');
+      throw new UnauthorizedException('Veuillez vérifier votre mot de passe.');
     }
 
     const token = this.jwtService.sign({ id: user._id });

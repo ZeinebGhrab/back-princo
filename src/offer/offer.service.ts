@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { Offer } from 'src/offer/schemas/offer.schema';
 import { OfferDto } from './dto/offer.dto';
@@ -40,9 +40,8 @@ export class OfferService {
     try {
       const offer = await this.offerModel.findOne({ _id: id });
       if (!offer) {
-        throw new HttpException(
+        throw new UnauthorizedException(
           "L'offre n'existe pas pour cette administrateur",
-          HttpStatus.NOT_FOUND,
         );
       } else {
         return offer;
@@ -59,9 +58,8 @@ export class OfferService {
         admin: offer.admin,
       });
       if (!checkAdmin) {
-        throw new HttpException(
+        throw new UnauthorizedException(
           "L'offre n'existe pas pour cette administrateur",
-          HttpStatus.NOT_FOUND,
         );
       } else {
         await this.offerModel.findByIdAndUpdate(id, offer, { new: true });

@@ -45,6 +45,13 @@ export class UserService {
 
     const updatedFields: any = { ...updateUserDto };
 
+    if (updatedFields.email && existingUser._id.toString() !== id) {
+      throw new HttpException(
+        'Un compte avec cet e-mail existe déjà.',
+        HttpStatus.CONFLICT,
+      );
+    }
+
     if (updateUserDto.password) {
       const hashedPassword = encodePassword(updateUserDto.password);
       updatedFields.password = hashedPassword;
@@ -127,6 +134,7 @@ export class UserService {
   }
 
   async sendEmailVerification(email: string, token: string): Promise<void> {
+    const url = `${process.env.URL}/verify?token=${token}`;
     const mailOptions = {
       from: ' Princo <princo@gmail.com>',
       to: email,
@@ -134,7 +142,7 @@ export class UserService {
       html: `
       <p>Bonjour,</p>
       <p>Veuillez cliquer sur le lien suivant pour vérifier votre adresse e-mail :</p>
-      <p><a href="${process.env.url}/verify?token=${token}">Vérifier l'e-mail</a></p>
+      <p><a href="${url}">Vérifier l'e-mail</a></p>
       <p>Si vous n'avez pas fait cette demande, veuillez ignorer cet e-mail.</p>
       `,
     };
@@ -153,29 +161,29 @@ export class UserService {
   }
 
   async sendEmailForgotPassword(email: string): Promise<boolean> {
-    const user = await this.userModel.findOneAndUpdate(
-      { email },
-      { $set: { resetPassword: true } },
-    );
-    if (!user) {
-      throw new HttpException('Utilisateur non trouvé', HttpStatus.NOT_FOUND);
-    }
-    const resetLink = `${process.env.url}/verify?email=${email}`;
-    const mailOptions = {
-      from: `Princo <princo@gmail.com>`,
-      to: email,
-      subject: 'Réinitialiser de mot de passe',
-      html: `
-      <p>Bonjour !</p>
-      <p>Si vous avez demandé à réinitialiser votre mot de passe, cliquez sur le lien ci-dessous :</p>
-      <p><a href=${resetLink}>Réinitialiser mon mot de passe</a></p>      
-      `,
-    };
     try {
+      const user = await this.userModel.findOneAndUpdate(
+        { email },
+        { $set: { resetPassword: true } },
+      );
+      if (!user) {
+        throw new Error("Vous n'avez pas de compte.");
+      }
+      const resetLink = `${process.env.URL}/verify?email=${email}`;
+      const mailOptions = {
+        from: `Princo <princo@gmail.com>`,
+        to: email,
+        subject: 'Réinitialisation de mot de passe',
+        html: `
+          <p>Bonjour !</p>
+          <p>Si vous avez demandé à réinitialiser votre mot de passe, cliquez sur le lien ci-dessous :</p>
+          <p><a href="${resetLink}">Réinitialiser mon mot de passe</a></p>      
+        `,
+      };
       await this.transporter.sendMail(mailOptions);
       return true;
     } catch (error) {
-      console.log("erreur d'envoyer un email", error);
+      console.error("Erreur lors de l'envoi de l'e-mail", error);
       return false;
     }
   }

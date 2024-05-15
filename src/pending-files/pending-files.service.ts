@@ -13,7 +13,7 @@ export class PendingFilesService {
     const pendingFilesCountByPrinter = await this.pendingFilesModel
       .aggregate([
         {
-          $match: { user: new mongoose.Types.ObjectId(user) },
+          $match: { user: new mongoose.Types.ObjectId(user), isPrinted: false },
         },
         {
           $lookup: {
@@ -73,8 +73,16 @@ export class PendingFilesService {
     });
   }
 
-  async deletePendingFile(id: string) {
-    const pendingFile = await this.pendingFilesModel.findByIdAndDelete(id);
+  async setIsPrinted(id: string) {
+    const pendingFile = await this.pendingFilesModel.findByIdAndUpdate(
+      { _id: new mongoose.Types.ObjectId(id) },
+      { isPrinted: true },
+      { new: true },
+    );
     return pendingFile;
+  }
+
+  async deletePendingFiles() {
+    await this.pendingFilesModel.deleteMany({ isPrinted: true }).exec();
   }
 }

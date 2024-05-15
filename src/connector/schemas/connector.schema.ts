@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import { User } from 'src/user/schemas/user.schema';
 @Schema()
 export class Connector {
-  @Prop()
+  @Prop({ timestamps: true })
   readonly connectorName: string;
 
   @Prop()

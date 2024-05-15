@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { User } from 'src/user/schemas/user.schema';
 import mongoose from 'mongoose';
-@Schema()
+@Schema({ timestamps: true })
 export class Offer {
   @Prop()
   readonly title: string;

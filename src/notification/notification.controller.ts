@@ -4,6 +4,7 @@ import { NotificationService } from './notification.service';
 import { Roles } from 'src/role/roles.decorator';
 import { Role } from 'src/role/enums/role.enum';
 import { CreateNotificationDto } from './dto/createNotification.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Controller('notification')
 @UseGuards(JwtAuthGuard)
@@ -26,5 +27,10 @@ export class NotificationController {
   @Post()
   async createNotification(notification: CreateNotificationDto) {
     this.notificationService.createNotification(notification);
+  }
+
+  @Cron(CronExpression.EVERY_6_MONTHS)
+  async deleteNotificationGreaterThanSixMonth() {
+    await this.notificationService.deleteNotification();
   }
 }

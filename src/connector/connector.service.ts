@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,7 +28,7 @@ export class ConnectorService {
       user: userId,
     });
     if (checkConnector) {
-      throw new ConflictException('Nom du connecteur est déja existe');
+      throw new ConflictException('Le nom du connecteur existe déjà.');
     }
     const apiKey = uuidv4();
     const newConnector = new this.connectorModel({
@@ -83,8 +84,8 @@ export class ConnectorService {
       connectorName,
       user: userId,
     });
-    if (checkConnector) {
-      throw new ConflictException('Nom du connecteur est déja existe');
+    if (checkConnector && checkConnector._id.toString() !== id) {
+      throw new ConflictException('Le nom du connecteur existe déjà.');
     }
     await this.connectorModel
       .findByIdAndUpdate(id, updateConnectorDto, { new: true })
@@ -94,10 +95,7 @@ export class ConnectorService {
   async setActive(id: string, active: { isActive: boolean }): Promise<void> {
     const connectorId = await this.connectorModel.findById(id);
     if (!connectorId) {
-      throw new HttpException(
-        "Le Connecteur n'existe pas",
-        HttpStatus.NOT_FOUND,
-      );
+      throw new UnauthorizedException("Le Connecteur n'existe pas");
     }
     await this.connectorModel
       .findByIdAndUpdate(id, active, { new: true })
@@ -111,16 +109,8 @@ export class ConnectorService {
       user: id,
     });
     if (!checkConnector) {
-      throw new HttpException(
+      throw new UnauthorizedException(
         "Le connecteur associé à cette clé API n'existe pas.",
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    if (!checkConnector.isActive) {
-      throw new HttpException(
-        "Vous devez d'abord activer le connecteur.",
-        HttpStatus.BAD_REQUEST,
       );
     }
 
@@ -138,10 +128,7 @@ export class ConnectorService {
   async remove(id: string): Promise<void> {
     const connector = await this.connectorModel.findByIdAndDelete(id);
     if (!connector) {
-      throw new HttpException(
-        "Le connecteur n'existe pas",
-        HttpStatus.NOT_FOUND,
-      );
+      throw new UnauthorizedException("Le connecteur n'existe pas");
     }
   }
 }

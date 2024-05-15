@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import { Offer } from 'src/offer/schemas/offer.schema';
 import { User } from 'src/user/schemas/user.schema';
 
-@Schema()
+@Schema({ timestamps: true })
 export class Payment {
   @Prop()
   readonly amount: number;

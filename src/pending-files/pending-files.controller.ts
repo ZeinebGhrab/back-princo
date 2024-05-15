@@ -1,15 +1,9 @@
-import {
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Put, Query, UseGuards } from '@nestjs/common';
 import { PendingFilesService } from './pending-files.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Roles } from 'src/role/roles.decorator';
 import { Role } from 'src/role/enums/role.enum';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Controller('pending-files')
 @UseGuards(JwtAuthGuard)
@@ -29,8 +23,13 @@ export class PendingFilesController {
     }
   }
 
-  @Delete(':id')
-  async deletePendingFile(@Param('id') id: string) {
-    await this.pendingFilesService.deletePendingFile(id);
+  @Put(':id')
+  async setIsPrintedPendingFile(@Param('id') id: string) {
+    await this.pendingFilesService.setIsPrinted(id);
+  }
+
+  @Cron(CronExpression.EVERY_6_MONTHS)
+  async deletePendingFilesIsPrinted() {
+    await this.pendingFilesService.deletePendingFiles();
   }
 }

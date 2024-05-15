@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { Notification } from 'src/notification/schemas/notification.schema';
 import { CreateNotificationDto } from '../notification/dto/createNotification.dto';
@@ -19,14 +19,16 @@ export class NotificationService {
       .skip(parseInt(skip))
       .limit(parseInt(limit))
       .exec();
-    if (!notifications) {
-      throw new HttpException('Pas de notifications', HttpStatus.NOT_FOUND);
-    } else {
-      return notifications;
-    }
+    return notifications;
   }
 
   async createNotification(notification: CreateNotificationDto) {
     await this.notificationModel.create(notification);
+  }
+
+  async deleteNotification() {
+    await this.notificationModel.deleteMany({
+      date: { $gt: new Date().setDate(new Date().getDate() - 180) },
+    });
   }
 }

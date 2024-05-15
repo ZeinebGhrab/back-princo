@@ -1,9 +1,8 @@
 import {
   ConflictException,
-  HttpException,
-  HttpStatus,
   Inject,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ImpressionNotificationGateway } from './impression-notification-gateway';
 import { Model, Types } from 'mongoose';
@@ -51,9 +50,8 @@ export class ImpressionService {
         isActive: true,
       });
       if (!checkConnector)
-        throw new HttpException(
+        throw new UnauthorizedException(
           'Connecteur est introuvable ou désactivé',
-          HttpStatus.NOT_FOUND,
         );
 
       const checkUser = await this.userModel.findById(user);
@@ -90,7 +88,7 @@ export class ImpressionService {
       }
     } catch (error) {
       console.log(error);
-      throw new Error(
+      throw new UnauthorizedException(
         'Une erreur est survenue lors de la vérification et de la notification',
       );
     }
