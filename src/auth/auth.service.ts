@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
+import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from 'src/auth/dto/login.dto';
@@ -41,6 +41,7 @@ export class AuthService {
   ): Promise<{
     token: string;
     id: string;
+    rememberMe: boolean;
     roles: Role[];
   }> {
     const { email, password, rememberMe } = loginDto;
@@ -48,30 +49,48 @@ export class AuthService {
     const user = await this.userModel.findOne({
       email,
       emailVerified: true,
-      emailVerificationToken: '',
     });
-    if (!user) {
-      throw new UnauthorizedException(
-        'Pas de compte associé à cette adresse e-mail.',
+    const desactiveUser = await this.userModel.findOne({
+      email,
+      emailVerified: false,
+    });
+
+    if (desactiveUser) {
+      throw new HttpException(
+        "Veuillez d'abord activer votre compte à travers l'email de réinitialisation envoyé.",
+        HttpStatus.BAD_REQUEST,
       );
     }
 
-    const isPasswordValid = comparePassword(password, user.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Veuillez vérifier votre mot de passe.');
+    const inexistingUser = await this.userModel.findOne({ email });
+    if (!inexistingUser) {
+      throw new HttpException(
+        'Pas de compte associé à cette adresse e-mail.',
+        HttpStatus.NOT_FOUND,
+      );
     }
+    if (user) {
+      const isPasswordValid = comparePassword(password, user.password);
+      if (!isPasswordValid) {
+        throw new HttpException(
+          'Veuillez vérifier votre mot de passe.',
+          HttpStatus.NOT_FOUND,
+        );
+      }
 
-    const token = this.jwtService.sign({ id: user._id });
+      const token = this.jwtService.sign({ id: user._id });
 
-    if (rememberMe) {
-      this.setRememberMeCookies(res, email, password);
+      if (rememberMe) {
+        this.setRememberMeCookies(res, email, password);
+      }
+
+      return {
+        token,
+        id: user._id,
+        rememberMe,
+        roles: user.roles,
+      };
     }
-
-    return {
-      token,
-      id: user._id,
-      roles: user.roles,
-    };
   }
 
   async logout(res: Response): Promise<void> {
@@ -88,7 +107,7 @@ export class AuthService {
       const user = await this.userModel.findById(decoded.id).exec();
       return user;
     } catch (error) {
-      throw new UnauthorizedException('Token invalide');
+      throw new HttpException('Token invalide', HttpStatus.NOT_FOUND);
     }
   }
 }

@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Model } from 'mongoose';
@@ -14,6 +15,7 @@ import { encodePassword } from 'src/utils/bcrypt';
 import { User } from './schemas/user.schema';
 import { UpdateUserDto } from './dto/update.user.dto';
 import { UpdateTickets } from './dto/update.tickets.user.dto';
+import * as fs from 'fs/promises';
 
 @Injectable()
 export class UserService {
@@ -34,39 +36,100 @@ export class UserService {
     });
   }
 
-  async getUserById(id: string): Promise<User> {
-    return this.userModel.findById(id).exec();
+  async getUserById(id: string) {
+    const user = await this.userModel.findById(id).exec();
+
+    if (!user) {
+      throw new NotFoundException('Utilisateur introuvable');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, profileImage, ...userData } = user.toObject();
+    let profileImageUrl = null;
+    if (profileImage) {
+      profileImageUrl = `${process.env.SERVER_URL}/uploads/profileimages/${profileImage}`;
+    }
+
+    return { ...userData, profileImage: profileImageUrl };
   }
+
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const { email, ...updatedFields }: any = { ...updateUserDto };
     const existingUser = await this.userModel.findById(id);
+
     if (!existingUser) {
       throw new ConflictException('Utilisateur non trouvé');
     }
 
-    const updatedFields: any = { ...updateUserDto };
+    try {
+      if (email && existingUser.email !== email) {
+        const existingMail = await this.userModel.findOne({ email });
+        if (existingMail && existingMail._id.toString() !== id) {
+          throw new HttpException(
+            'Un compte avec cet e-mail existe déjà.',
+            HttpStatus.CONFLICT,
+          );
+        } else {
+          const token = this.jwtService.sign({ id });
 
-    if (updatedFields.email && existingUser._id.toString() !== id) {
-      throw new HttpException(
-        'Un compte avec cet e-mail existe déjà.',
-        HttpStatus.CONFLICT,
+          updatedFields.resetEmail = true;
+          updatedFields.emailVerificationToken = token;
+          await this.sendEmailChangeMail(email, token);
+        }
+      }
+
+      if (updateUserDto.password) {
+        const hashedPassword = encodePassword(updateUserDto.password);
+        updatedFields.password = hashedPassword;
+      }
+
+      if (updateUserDto.invoiceDetails) {
+        updatedFields.invoiceDetails = updateUserDto.invoiceDetails;
+      }
+
+      const updatedUser = await this.userModel.findByIdAndUpdate(
+        id,
+        { $set: updatedFields },
+        { new: true },
       );
-    }
 
-    if (updateUserDto.password) {
-      const hashedPassword = encodePassword(updateUserDto.password);
-      updatedFields.password = hashedPassword;
+      return updatedUser;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
     }
+  }
 
-    if (updateUserDto.invoiceDetails) {
-      updatedFields.invoiceDetails = updateUserDto.invoiceDetails;
-    }
-
-    const updatedUser = await this.userModel.findByIdAndUpdate(
+  async updateProfileImage(id: string, file: string) {
+    return await this.userModel.findByIdAndUpdate(
       id,
-      updatedFields,
+      { $set: { profileImage: file } },
       { new: true },
     );
-    return updatedUser;
+  }
+
+  async deleteProfileImage(id: string): Promise<void> {
+    try {
+      const user = await this.userModel.findById(id);
+      if (user && user.profileImage) {
+        const imagePath = `./uploads/profileimages/${user.profileImage}`;
+
+        const fileExists = await fs
+          .access(imagePath)
+          .then(() => true)
+          .catch(() => false);
+
+        if (fileExists) {
+          await fs.unlink(imagePath);
+        }
+      }
+    } catch (error) {
+      console.error(
+        `Une erreur s'est produite lors de la suppression de l'image.`,
+        error,
+      );
+      throw error;
+    }
   }
 
   async updateTicketsUser(updateUser: UpdateTickets) {
@@ -98,9 +161,7 @@ export class UserService {
       );
       return updatedUser;
     } catch (error) {
-      throw new Error(
-        "Erreur lors de la mise à jour des tickets de l'utilisateur",
-      );
+      console.log("Erreur lors de la mise à jour des tickets de l'utilisateur");
     }
   }
 
@@ -134,13 +195,13 @@ export class UserService {
   }
 
   async sendEmailVerification(email: string, token: string): Promise<void> {
-    const url = `${process.env.URL}/verify?token=${token}`;
+    const url = `${process.env.URL}/verify?token=${token}&initMail=false`;
     const mailOptions = {
       from: ' Princo <princo@gmail.com>',
       to: email,
-      subject: 'Email de vérification',
+      subject: "Email d'activation du compte",
       html: `
-      <p>Bonjour,</p>
+      <p>Bonjour</p>
       <p>Veuillez cliquer sur le lien suivant pour vérifier votre adresse e-mail :</p>
       <p><a href="${url}">Vérifier l'e-mail</a></p>
       <p>Si vous n'avez pas fait cette demande, veuillez ignorer cet e-mail.</p>
@@ -148,43 +209,75 @@ export class UserService {
     };
     await this.transporter.sendMail(mailOptions);
   }
-  async verifyEmail(token: string): Promise<{ token: string; id: string }> {
+
+  async verifyEmail(
+    token: string,
+    email?: string,
+  ): Promise<{ token: string; id: string }> {
+    const updateData: any = {
+      emailVerified: true,
+      emailVerificationToken: '',
+      resetEmail: false,
+    };
+
+    if (email) {
+      updateData.email = email;
+    }
+
     const user = await this.userModel.findOneAndUpdate(
       { emailVerificationToken: token },
-      { $set: { emailVerified: true, emailVerificationToken: '' } },
+      { $set: updateData },
       { new: true },
     );
+
     if (!user) {
-      throw new BadRequestException('token de vérification est invalide');
+      throw new BadRequestException('Le lien de réinitialisation a expiré.');
     }
+
     return { token: this.jwtService.sign({ id: user._id }), id: user._id };
   }
 
-  async sendEmailForgotPassword(email: string): Promise<boolean> {
-    try {
-      const user = await this.userModel.findOneAndUpdate(
-        { email },
-        { $set: { resetPassword: true } },
+  async sendEmailForgotPassword(email: string): Promise<void> {
+    const user = await this.userModel.findOneAndUpdate(
+      { email },
+      { $set: { resetPassword: true } },
+    );
+    if (!user) {
+      throw new HttpException(
+        'Pas de compte associé à cette adresse e-mail.',
+        HttpStatus.NOT_FOUND,
       );
-      if (!user) {
-        throw new Error("Vous n'avez pas de compte.");
-      }
-      const resetLink = `${process.env.URL}/verify?email=${email}`;
-      const mailOptions = {
-        from: `Princo <princo@gmail.com>`,
-        to: email,
-        subject: 'Réinitialisation de mot de passe',
-        html: `
-          <p>Bonjour !</p>
+    }
+    const resetLink = `${process.env.URL}/verify?email=${email}`;
+    const mailOptions = {
+      from: `Princo <princo@gmail.com>`,
+      to: email,
+      subject: 'Email de réinitialisation de mot de passe',
+      html: `
+          <p>Bonjour</p>
           <p>Si vous avez demandé à réinitialiser votre mot de passe, cliquez sur le lien ci-dessous :</p>
           <p><a href="${resetLink}">Réinitialiser mon mot de passe</a></p>      
         `,
+    };
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendEmailChangeMail(email: string, token: string): Promise<void> {
+    try {
+      const resetLink = `${process.env.URL}/verify?token=${token}&initMail=true&email=${email}`;
+      const mailOptions = {
+        from: `Princo <princo@gmail.com>`,
+        to: email,
+        subject: "Email de réinitialisation d'email",
+        html: `
+            <p>Bonjour</p>
+            <p>Si vous avez demandé à réinitialiser votre email, cliquez sur le lien ci-dessous :</p>
+            <p><a href="${resetLink}">Réinitialiser mon email</a></p>      
+          `,
       };
       await this.transporter.sendMail(mailOptions);
-      return true;
     } catch (error) {
-      console.error("Erreur lors de l'envoi de l'e-mail", error);
-      return false;
+      console.log(error);
     }
   }
 
@@ -210,8 +303,6 @@ export class UserService {
   }
 
   async deleteUserNotConfirmEmail() {
-    await this.userModel
-      .deleteMany({ emailVerified: true, emailVerificationToken: { $ne: '' } })
-      .exec();
+    await this.userModel.deleteMany({ emailVerified: false }).exec();
   }
 }

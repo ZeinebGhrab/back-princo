@@ -1,0 +1,226 @@
+.container {
+    display: flex;
+    justify-content: space-between;
+    clear: both;
+  }
+
+img {
+    height: 40px;
+    margin-bottom: 5px;
+}
+
+body{
+    margin: 35px;
+}
+
+.princo-app {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    color: #000000;
+}
+
+.invoice-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 0px;
+    gap: 4px;
+    font-size: 14px;
+    color: #666371;
+}
+
+.facture-title {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: bold;
+    font-size: 24px;
+    line-height: 28px;
+    display: flex;
+    align-items: center;
+    text-align: right;
+    color: #41448f;
+}
+
+.ref {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 14px;
+    color:#000000
+}
+
+.app-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0px;
+    color: #666371;
+}
+
+.client-section {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  margin-bottom: 45px;
+  background-color: #666371;
+  border-radius: 8px;
+  border: 1px solid #dedc00;
+  padding : 25px;
+
+}
+
+.facture-a {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 16px;
+    color: #120D26;
+}
+
+.address {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.customer-info {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 16px;
+    text-align: right;
+    color: #120D26;
+    margin-bottom: 2px;
+}
+
+.place-address {
+    width: 170px;
+    height: 42px;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 14px;
+    text-align: right;
+    color: #666371;
+}
+
+.echeance {
+    margin-bottom: 25px;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 500;
+    color: #120D26;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.table1 {
+    width: 100%;
+}
+.table1 td, th {
+    text-align: left;
+    height: 30px;
+}
+
+.table1 th{
+    border-bottom: 1px solid #E3E3E6;
+}
+
+.designation,
+.qte,
+.pu,
+.remise,
+.prix,
+.tva {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    color: #666371;
+}
+
+.amounts {
+    height: 16px;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 16px;
+    color: #000000;
+}
+
+.table2 {
+    float: right; 
+    margin-top: 60px;
+    margin-bottom: 30px;
+}
+
+.table2 td {
+    width: 30%;
+    height: 30px;
+}
+.table2 td {
+   border-bottom: 1px solid  #E3E3E6;
+}
+
+.total-ht,
+.total-tva,
+.total-ttc {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    text-align: right;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 16px;
+}
+
+.title-ht,
+.title-tva,
+.title-ttc {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    color: #666371;
+}
+
+.container-montant {
+  display: flex;
+  justify-content: space-between;
+  clear: both;
+  background-color: #666371;
+  border-radius: 8px; 
+  border: 1px solid #dedc00;
+  padding : 25px;
+}
+
+.montant-a-payer {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 16px;
+    color: #120D26;
+}
+
+.total-amount {
+    width: 44px;
+    height: 14px;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 14px;
+    text-align: right;
+    color: #120D26;
+    padding-right: 25px;
+}

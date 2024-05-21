@@ -1,4 +1,10 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { InvoiceDetailsDto } from './invoiceDetails.dto';
 
 export class UpdateUserDto {
@@ -15,6 +21,13 @@ export class UpdateUserDto {
   @IsEmail()
   @IsOptional()
   email?: string;
+
+  @IsOptional()
+  emailVerificationToken?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  resetEmail: boolean;
 
   @IsString()
   @IsOptional()

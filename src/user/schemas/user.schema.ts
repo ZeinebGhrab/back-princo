@@ -17,29 +17,35 @@ export class User extends Document {
   @Prop({ required: true })
   readonly password: string;
 
-  @Prop()
+  @Prop({ default: '' })
   readonly gender: string;
 
-  @Prop()
+  @Prop({ default: '' })
   readonly birthDate: string;
 
-  @Prop()
+  @Prop({ default: '' })
   readonly tel: string;
 
-  @Prop()
+  @Prop({ default: '' })
   readonly country: string;
 
-  @Prop()
+  @Prop({ default: '' })
   readonly profile: string;
+
+  @Prop()
+  readonly profileImage: string;
 
   @Prop({ default: '' })
   emailVerificationToken: string;
 
   @Prop({ default: false })
-  emailVerified: boolean;
+  readonly emailVerified: boolean;
 
   @Prop({ default: false })
-  resetPassword: boolean;
+  readonly resetEmail: boolean;
+
+  @Prop({ default: false })
+  readonly resetPassword: boolean;
 
   @Prop({ type: InvoiceDetails })
   readonly invoiceDetails: InvoiceDetails;

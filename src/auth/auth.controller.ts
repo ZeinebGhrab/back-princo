@@ -9,12 +9,8 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
-    try {
-      const result = await this.authService.login(loginDto, res);
-      return res.json(result);
-    } catch (error) {
-      throw error;
-    }
+    const result = await this.authService.login(loginDto, res);
+    return res.json(result);
   }
   @Get('logout')
   async logout(@Res() res: Response) {

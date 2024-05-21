@@ -50,7 +50,7 @@ export class InvoiceService {
   }
 
   async generateInvoice(id: string): Promise<Buffer> {
-    const templatePath = 'C:/Users/a/Desktop/backend/views/invoice.ejs';
+    const templatePath = 'views/invoice.ejs';
     const template = fs.readFileSync(templatePath, 'utf8');
     const compiledTemplate = ejs.compile(template);
     const invoice = await this.invoiceModel.findById(id).populate('user');
@@ -59,8 +59,9 @@ export class InvoiceService {
       ref: invoice.ref,
       offer: invoice.offer,
       user: invoice.user,
+      logoPath: `${process.env.SERVER_URL}/images/princo.png`,
+      stylePath: `${process.env.SERVER_URL}/styles/invoice.css`,
       paymentDate: moment(invoice.paymentDate).format('DD MMMM YYYY'),
-      expirationDate: moment(invoice.expirationDate).format('DD MMMM YYYY'),
       amountTTC: invoice.offer.unitPrice * (1 + invoice.offer.tva),
       amountTVA: (invoice.offer.unitPrice * invoice.offer.tva) / 100,
       amount: invoice.amount,

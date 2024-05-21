@@ -7,6 +7,8 @@ import {
   Body,
   HttpException,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import mongoose from 'mongoose';
@@ -17,6 +19,20 @@ import { Role } from 'src/role/enums/role.enum';
 import { User } from './schemas/user.schema';
 import { UpdateUserDto } from './dto/update.user.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as path from 'path';
+import { diskStorage } from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+
+const storage = diskStorage({
+  destination: './uploads/profileimages',
+  filename: (_req, file, cb) => {
+    const filename: string = uuidv4();
+    const extension: string = path.extname(file.originalname) || '';
+    const uniqueFilename = `${filename}${extension}`;
+    cb(null, uniqueFilename);
+  },
+});
 
 @Controller('users')
 export class UserController {
@@ -25,7 +41,7 @@ export class UserController {
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @Roles(Role.User)
-  async getUserById(@Param('id') id: string): Promise<User> {
+  async getUserById(@Param('id') id: string) {
     const isValid = mongoose.Types.ObjectId.isValid(id);
     if (!isValid) throw new HttpException('User not found', 404);
     const findUser = await this.userService.getUserById(id);
@@ -65,12 +81,13 @@ export class UserController {
   @Post('/verify')
   async verifyEmail(
     @Body('token') token: string,
+    @Body('email') email?: string,
   ): Promise<{ token: string; id: string }> {
-    return await this.userService.verifyEmail(token);
+    return await this.userService.verifyEmail(token, email);
   }
 
   @Post('/forgotPassword')
-  async forgotPassword(@Body('email') email: string): Promise<boolean> {
+  async forgotPassword(@Body('email') email: string): Promise<void> {
     return this.userService.sendEmailForgotPassword(email);
   }
 
@@ -81,6 +98,7 @@ export class UserController {
   ): Promise<{ token: string; id: string }> {
     return this.userService.resetPassword(email, password);
   }
+
   @Cron(CronExpression.EVERY_10_MINUTES)
   async updateResetPasswordToFalse() {
     await this.userService.updateEmailResetPassword();
@@ -89,5 +107,17 @@ export class UserController {
   @Cron('0 0 1 * *')
   async deleteUserNotConfirmEmail() {
     await this.userService.deleteUserNotConfirmEmail();
+  }
+
+  @Post('upload/:id')
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.User)
+  @UseInterceptors(FileInterceptor('file', { storage: storage }))
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('id') id: string,
+  ) {
+    await this.userService.deleteProfileImage(id);
+    return this.userService.updateProfileImage(id, file.filename);
   }
 }
