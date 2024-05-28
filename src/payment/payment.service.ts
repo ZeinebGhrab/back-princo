@@ -116,7 +116,6 @@ export class PaymentService {
           user: metadata.userId,
           offerId: metadata.offerId,
           amount: metadata.totalPrice,
-          expirationDate: metadata.expirationDate,
         });
       }
       return { received: true };

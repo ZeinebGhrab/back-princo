@@ -71,10 +71,9 @@ export class UserService {
           );
         } else {
           const token = this.jwtService.sign({ id });
-
           updatedFields.resetEmail = true;
           updatedFields.emailVerificationToken = token;
-          await this.sendEmailChangeMail(email, token);
+          await this.sendEmailChangeMail(email, token, existingUser.email);
         }
       }
 
@@ -95,7 +94,6 @@ export class UserService {
 
       return updatedUser;
     } catch (error) {
-      console.error(error.message);
       throw error;
     }
   }
@@ -112,22 +110,11 @@ export class UserService {
     try {
       const user = await this.userModel.findById(id);
       if (user && user.profileImage) {
-        const imagePath = `./uploads/profileimages/${user.profileImage}`;
-
-        const fileExists = await fs
-          .access(imagePath)
-          .then(() => true)
-          .catch(() => false);
-
-        if (fileExists) {
-          await fs.unlink(imagePath);
-        }
+        const fileName = user.profileImage.split('/').pop();
+        const imagePath = `./uploads/profileimages/${fileName}`;
+        await fs.unlink(imagePath);
       }
     } catch (error) {
-      console.error(
-        `Une erreur s'est produite lors de la suppression de l'image.`,
-        error,
-      );
       throw error;
     }
   }
@@ -177,6 +164,24 @@ export class UserService {
     return updateTicketsToZero;
   }
 
+  async verifyResetPasswordUser(email: string) {
+    try {
+      const { resetPassword } = await this.userModel.findOne({ email });
+      return resetPassword;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async verifyActiveAccount(email: string) {
+    try {
+      const { emailVerified } = await this.userModel.findOne({ email });
+      return emailVerified;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async signUp(signUpDto: SignUpDto): Promise<{ message: string }> {
     const checkUser = await this.userModel.findOne({ email: signUpDto.email });
     if (checkUser) {
@@ -195,7 +200,7 @@ export class UserService {
   }
 
   async sendEmailVerification(email: string, token: string): Promise<void> {
-    const url = `${process.env.URL}/verify?token=${token}&initMail=false`;
+    const url = `${process.env.URL}/verify?token=${token}&initMail=false&email=${email}`;
     const mailOptions = {
       from: ' Princo <princo@gmail.com>',
       to: email,
@@ -212,7 +217,8 @@ export class UserService {
 
   async verifyEmail(
     token: string,
-    email?: string,
+    email: string,
+    newEmail?: string,
   ): Promise<{ token: string; id: string }> {
     const updateData: any = {
       emailVerified: true,
@@ -220,8 +226,8 @@ export class UserService {
       resetEmail: false,
     };
 
-    if (email) {
-      updateData.email = email;
+    if (newEmail) {
+      updateData.email = newEmail;
     }
 
     const user = await this.userModel.findOneAndUpdate(
@@ -231,7 +237,19 @@ export class UserService {
     );
 
     if (!user) {
-      throw new BadRequestException('Le lien de réinitialisation a expiré.');
+      const updateUser = await this.userModel.findOne({ email });
+      const token = this.jwtService.sign({ id: updateUser._id });
+      await this.userModel.findOneAndUpdate(
+        { email },
+        { $set: { emailVerificationToken: token } },
+        { new: true },
+      );
+      newEmail
+        ? await this.sendEmailChangeMail(newEmail, token, email)
+        : await this.sendEmailVerification(email, token);
+      throw new BadRequestException(
+        'Le lien de réinitialisation a expiré. Un nouvel e-mail va être envoyé à votre adresse. Veuillez le consulter.',
+      );
     }
 
     return { token: this.jwtService.sign({ id: user._id }), id: user._id };
@@ -262,12 +280,16 @@ export class UserService {
     await this.transporter.sendMail(mailOptions);
   }
 
-  async sendEmailChangeMail(email: string, token: string): Promise<void> {
+  async sendEmailChangeMail(
+    newEmail: string,
+    token: string,
+    email: string,
+  ): Promise<void> {
     try {
-      const resetLink = `${process.env.URL}/verify?token=${token}&initMail=true&email=${email}`;
+      const resetLink = `${process.env.URL}/verify?token=${token}&initMail=true&newEmail=${newEmail}&email=${email}`;
       const mailOptions = {
         from: `Princo <princo@gmail.com>`,
-        to: email,
+        to: newEmail,
         subject: "Email de réinitialisation d'email",
         html: `
             <p>Bonjour</p>
@@ -277,7 +299,7 @@ export class UserService {
       };
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   }
 
@@ -300,6 +322,13 @@ export class UserService {
       .updateMany({ resetPassword: true }, { $set: { resetPassword: false } })
       .exec();
     return updateEmail;
+  }
+
+  async desactiveEmail() {
+    await this.userModel.updateMany(
+      { emailVerificationToken: { $ne: '' } },
+      { $set: { emailVerificationToken: '' } },
+    );
   }
 
   async deleteUserNotConfirmEmail() {

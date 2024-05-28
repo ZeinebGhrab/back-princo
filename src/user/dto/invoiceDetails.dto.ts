@@ -1,4 +1,4 @@
-import { IsEmpty, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 export class InvoiceDetailsDto {
   @IsString()
   readonly legalName: string;
@@ -17,7 +17,4 @@ export class InvoiceDetailsDto {
 
   @IsString()
   readonly postalCode: string;
-
-  @IsEmpty({ message: 'You cannot pass user id' })
-  readonly userId: string;
 }

@@ -9,9 +9,9 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import mongoose from 'mongoose';
 import { SignUpDto } from './dto/signup.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Roles } from 'src/role/roles.decorator';
@@ -23,6 +23,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import * as path from 'path';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
+import { forgetPasswordDto } from './dto/forgotPassword.dto';
+import { verifyEmailDto } from './dto/verifyEmail.dto';
+import { resetPasswordDto } from './dto/resetPassword.dto';
 
 const storage = diskStorage({
   destination: './uploads/profileimages',
@@ -42,11 +45,14 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Roles(Role.User)
   async getUserById(@Param('id') id: string) {
-    const isValid = mongoose.Types.ObjectId.isValid(id);
-    if (!isValid) throw new HttpException('User not found', 404);
-    const findUser = await this.userService.getUserById(id);
-    if (!findUser) throw new HttpException('User not found', 404);
-    return findUser;
+    try {
+      const findUser = await this.userService.getUserById(id);
+      if (!findUser)
+        throw new HttpException('Utilisateur non trouvé', HttpStatus.NOT_FOUND);
+      return findUser;
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Put(':id')
@@ -56,16 +62,16 @@ export class UserController {
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    const isValid = mongoose.Types.ObjectId.isValid(id);
-    if (!isValid) {
-      throw new HttpException('User not valid', 404);
-    }
-    const updateUser = await this.userService.updateUser(id, updateUserDto);
-    if (!updateUser) {
-      throw new HttpException('There is no updated user', 404);
-    }
+    try {
+      const updateUser = await this.userService.updateUser(id, updateUserDto);
+      if (!updateUser) {
+        throw new HttpException('Utilisateur non trouvé', HttpStatus.NOT_FOUND);
+      }
 
-    return updateUser;
+      return updateUser;
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
@@ -80,28 +86,50 @@ export class UserController {
 
   @Post('/verify')
   async verifyEmail(
-    @Body('token') token: string,
-    @Body('email') email?: string,
+    @Body() verifyEmail: verifyEmailDto,
   ): Promise<{ token: string; id: string }> {
-    return await this.userService.verifyEmail(token, email);
+    return await this.userService.verifyEmail(
+      verifyEmail.token,
+      verifyEmail.email,
+      verifyEmail?.newEmail,
+    );
   }
 
   @Post('/forgotPassword')
-  async forgotPassword(@Body('email') email: string): Promise<void> {
-    return this.userService.sendEmailForgotPassword(email);
+  async forgotPassword(
+    @Body() forgetPassword: forgetPasswordDto,
+  ): Promise<void> {
+    return this.userService.sendEmailForgotPassword(forgetPassword.email);
   }
 
   @Post('/resetPassword')
   async resetPassword(
-    @Body('email') email: string,
-    @Body('password') password: string,
+    @Body() resetPassword: resetPasswordDto,
   ): Promise<{ token: string; id: string }> {
-    return this.userService.resetPassword(email, password);
+    return this.userService.resetPassword(
+      resetPassword.email,
+      resetPassword.password,
+    );
+  }
+
+  @Get('verifyResetPassword/:email')
+  async verifyResetPasswordUser(@Param('email') email: string) {
+    return this.userService.verifyResetPasswordUser(email);
+  }
+
+  @Get('verifyActiveAccount/:email')
+  async verifyActiveAccount(@Param('email') email: string) {
+    return this.userService.verifyActiveAccount(email);
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async updateResetPasswordToFalse() {
     await this.userService.updateEmailResetPassword();
+  }
+
+  @Cron(CronExpression.EVERY_2_HOURS)
+  async desactiveEmail() {
+    await this.userService.desactiveEmail();
   }
 
   @Cron('0 0 1 * *')

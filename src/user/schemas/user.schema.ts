@@ -17,19 +17,19 @@ export class User extends Document {
   @Prop({ required: true })
   readonly password: string;
 
-  @Prop({ default: '' })
+  @Prop()
   readonly gender: string;
 
-  @Prop({ default: '' })
+  @Prop()
   readonly birthDate: string;
 
-  @Prop({ default: '' })
+  @Prop()
   readonly tel: string;
 
-  @Prop({ default: '' })
+  @Prop()
   readonly country: string;
 
-  @Prop({ default: '' })
+  @Prop()
   readonly profile: string;
 
   @Prop()

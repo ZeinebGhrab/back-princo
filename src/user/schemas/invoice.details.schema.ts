@@ -3,22 +3,22 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class InvoiceDetails extends Document {
-  @Prop({ default: '' })
+  @Prop()
   readonly legalName: string;
 
-  @Prop({ default: '' })
+  @Prop()
   readonly fiscalId: string;
 
-  @Prop({ default: '' })
+  @Prop()
   readonly adress: string;
 
-  @Prop({ default: '' })
+  @Prop()
   readonly country: string;
 
-  @Prop({ default: '' })
+  @Prop()
   readonly city: string;
 
-  @Prop({ default: '' })
+  @Prop()
   readonly postalCode: string;
 }
 export const InvoiceDetailsSchema =
